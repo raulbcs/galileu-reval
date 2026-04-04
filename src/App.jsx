@@ -1,21 +1,41 @@
 import { useState, useEffect } from 'react'
-import { authenticate } from './api/client'
+import { useIsFetching, useQueryClient } from '@tanstack/react-query'
+import { authenticate, clearServerCache } from './api/client'
+import { HomePage } from './pages/HomePage'
 import { ProdutosPage } from './pages/ProdutosPage'
+import { ProdutoDetalhePage } from './pages/ProdutoDetalhePage'
 import { CategoriasPage } from './pages/CategoriasPage'
 import { FornecedoresPage } from './pages/FornecedoresPage'
 import { LicencasPage } from './pages/LicencasPage'
-import './App.css'
 
 const TABS = [
+  { key: 'home', label: 'Inicio' },
   { key: 'produtos', label: 'Produtos' },
   { key: 'categorias', label: 'Categorias' },
   { key: 'fornecedores', label: 'Fornecedores' },
-  { key: 'licencas', label: 'Licenças' },
+  { key: 'licencas', label: 'Licencas' },
 ]
 
 function App() {
-  const [activeTab, setActiveTab] = useState('produtos')
+  const [activeTab, setActiveTab] = useState('home')
+  const [selectedProduto, setSelectedProduto] = useState(null)
   const [authStatus, setAuthStatus] = useState('pending')
+  const queryClient = useQueryClient()
+  const isFetching = useIsFetching()
+
+  async function handleClearCache() {
+    if (!window.confirm('Limpar todo o cache do servidor? Os dados serao buscados novamente da Reval.')) return
+    await clearServerCache()
+    queryClient.clear()
+  }
+
+  function handleSelectProduto(codigo) {
+    setSelectedProduto(codigo)
+  }
+
+  function handleBackFromDetalhe() {
+    setSelectedProduto(null)
+  }
 
   useEffect(() => {
     if (localStorage.getItem('reval_token')) {
@@ -24,7 +44,7 @@ function App() {
     }
     authenticate()
       .then(() => setAuthStatus('ok'))
-      .catch((err) => setAuthStatus('error'))
+      .catch(() => setAuthStatus('error'))
   }, [])
 
   if (authStatus === 'pending') {
@@ -32,11 +52,28 @@ function App() {
   }
 
   if (authStatus === 'error') {
-    return <div className="loading-screen error">Falha na autenticação com a API.</div>
+    return <div className="loading-screen error">Falha na autenticacao.</div>
+  }
+
+  if (selectedProduto) {
+    return (
+      <div className="app">
+        {isFetching > 0 && <div className="loading-bar" />}
+        <header className="app-header">
+          <h1>Papelaria Galileu</h1>
+          <button className="btn-clear-cache" onClick={handleClearCache}>Limpar cache</button>
+        </header>
+        <main className="app-content">
+          <ProdutoDetalhePage codigo={selectedProduto} onBack={handleBackFromDetalhe} />
+        </main>
+      </div>
+    )
   }
 
   return (
     <div className="app">
+      {isFetching > 0 && <div className="loading-bar" />}
+
       <header className="app-header">
         <h1>Papelaria Galileu</h1>
         <nav className="tabs">
@@ -50,10 +87,12 @@ function App() {
             </button>
           ))}
         </nav>
+        <button className="btn-clear-cache" onClick={handleClearCache}>Limpar cache</button>
       </header>
 
       <main className="app-content">
-        {activeTab === 'produtos' && <ProdutosPage />}
+        {activeTab === 'home' && <HomePage onSelectProduto={handleSelectProduto} />}
+        {activeTab === 'produtos' && <ProdutosPage onSelectProduto={handleSelectProduto} />}
         {activeTab === 'categorias' && <CategoriasPage />}
         {activeTab === 'fornecedores' && <FornecedoresPage />}
         {activeTab === 'licencas' && <LicencasPage />}

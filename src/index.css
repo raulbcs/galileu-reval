@@ -101,6 +101,24 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
   font-weight: 600;
 }
 
+.btn-clear-cache {
+  margin-left: auto;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: var(--sans);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.btn-clear-cache:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
 .app-content {
   padding: 24px;
   flex: 1;
@@ -288,4 +306,218 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading bar */
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  z-index: 999;
+  animation: loading-pulse 1s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Home */
+.home-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding-top: 40px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.welcome {
+  text-align: center;
+}
+
+.welcome h1 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.welcome p {
+  color: var(--text);
+  font-size: 16px;
+}
+
+/* Search */
+.search-form {
+  width: 100%;
+}
+
+.search-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  justify-content: center;
+}
+
+.search-tab {
+  background: none;
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--sans);
+  color: var(--text);
+}
+
+.search-tab.active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.search-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.search-input-row input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-family: var(--mono);
+  outline: none;
+}
+
+.search-input-row input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.search-result {
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.home-page:has(.search-results-grid) {
+  max-width: 1200px;
+}
+
+.img-placeholder {
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* Produto detalhe */
+.btn-back {
+  background: none;
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.btn-back:hover { background: var(--accent-bg); }
+
+.detalhe {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 768px) {
+  .detalhe { grid-template-columns: 1fr; }
+}
+
+.detalhe-img {
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.detalhe-img img {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+}
+
+.detalhe-info h2 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+.detalhe-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detalhe-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.detalhe-table .label {
+  color: var(--text);
+  width: 160px;
+  font-size: 13px;
+}
+
+.preco-row .preco {
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--accent);
+}
+
+.detalhe-extra {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--code-bg);
+  border-radius: var(--radius);
+}
+
+.detalhe-extra h3 { margin: 0 0 8px; font-size: 16px; }
+.detalhe-extra p { font-size: 14px; white-space: pre-line; }
+
+.detalhe-galeria { margin-top: 32px; }
+
+.galeria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.galeria-item {
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+
+.galeria-item img {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
 }

@@ -14,6 +14,7 @@ import {
   getImagens,
   getProdutosByLista,
   getProdutosByLicencaCategoria,
+  getProdutos,
 } from '../api/client'
 import { fetchAndCacheImage } from '../api/imageCache'
 
@@ -33,6 +34,15 @@ export function useProdutosPage(pageIndex = 1, pageSize = 20) {
   return useQuery({
     queryKey: ['produtos', 'page', pageIndex, pageSize],
     queryFn: () => getProdutosPage(pageIndex, pageSize),
+  })
+}
+
+export function useProdutos(enabled) {
+  return useQuery({
+    queryKey: ['produtos', 'all'],
+    queryFn: getProdutos,
+    staleTime: 10 * 60 * 1000,
+    enabled: !!enabled,
   })
 }
 

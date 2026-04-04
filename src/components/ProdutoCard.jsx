@@ -1,10 +1,10 @@
 import { useImagemCapa } from '../hooks/useRevalApi'
 
-export function ProdutoCard({ produto }) {
+export function ProdutoCard({ produto, onClick }) {
   const { data: imgUrl, isLoading } = useImagemCapa(produto.codigo)
 
   return (
-    <div className="produto-card">
+    <div className="produto-card" onClick={() => onClick?.(produto.codigo)} style={onClick ? { cursor: 'pointer' } : {}}>
       <div className="produto-img">
         {isLoading ? (
           <span className="img-placeholder">...</span>

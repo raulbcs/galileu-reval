@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { imageCachePlugin } from './vite-image-cache'
+import { revalCachePlugin } from './vite-reval-cache'
 
 export default defineConfig({
-  plugins: [react(), imageCachePlugin()],
+  plugins: [react(), revalCachePlugin()],
 })

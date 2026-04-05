@@ -2,6 +2,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import axios from 'axios'
 import crypto from 'node:crypto'
+import { config } from 'dotenv'
+
+config()
 
 const REVAL_BASE_URL = 'http://api.reval.net'
 const CACHE_DIR = path.resolve('cache')
@@ -23,8 +26,8 @@ async function fetchToken() {
   const start = Date.now()
   const { data } = await axios.get(`${REVAL_BASE_URL}/api/get-token`, {
     params: {
-      username: process.env.REVAL_USER || 'REDACTED_USER',
-      password: process.env.REVAL_PASS || 'REDACTED_PASS',
+      username: process.env.REVAL_USER,
+      password: process.env.REVAL_PASS,
     },
   })
   if (typeof data === 'string') throw new Error(data)
@@ -81,7 +84,8 @@ export function revalCachePlugin() {
     name: 'vite-plugin-reval-cache',
     configureServer(server) {
       // Pre-cache all products on server start
-      const allProductsUrl = '/api/produto/get-all-tabela?usuario=REDACTED_USER'
+      const REVAL_USER = process.env.REVAL_USER
+      const allProductsUrl = `/api/produto/get-all-tabela?usuario=${REVAL_USER}`
       const allProductsCache = cachePath('api', allProductsUrl)
 
       if (!fs.existsSync(allProductsCache)) {
@@ -142,6 +146,20 @@ export function revalCachePlugin() {
         }
       })
 
+      // --- Auth (proxy token request so credentials never reach the browser) ---
+      server.middlewares.use('/cached-api/auth', async (req, res) => {
+        try {
+          const token = await getToken()
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ access_token: token }))
+        } catch (err) {
+          console.error(`[reval-cache] Auth failed: ${err.message}`)
+          res.statusCode = 401
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: err.message }))
+        }
+      })
+
       // --- Clear cache (must be before the generic /cached-api handler) ---
       server.middlewares.use('/cached-api/clear', (req, res) => {
         if (req.method !== 'POST') {
@@ -159,6 +177,18 @@ export function revalCachePlugin() {
         }
         rmDir(path.join(CACHE_DIR, 'api'))
         rmDir(path.join(CACHE_DIR, 'images'))
+
+        const REVAL_USER = process.env.REVAL_USER
+        const allProductsUrl = `/api/produto/get-all-tabela?usuario=${REVAL_USER}`
+        apiGet(`${REVAL_BASE_URL}${allProductsUrl}`, { timeout: 240000 })
+          .then((response) => {
+            ensureDir(path.join(CACHE_DIR, 'api'))
+            fs.writeFileSync(cachePath('api', allProductsUrl), JSON.stringify(response.data))
+            console.log(`[reval-cache] Re-cached ${Array.isArray(response.data) ? response.data.length : '?'} products after cache clear`)
+          })
+          .catch((err) => {
+            console.error('[reval-cache] Re-cache after clear failed:', err.message)
+          })
 
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({ ok: true, removed: count }))

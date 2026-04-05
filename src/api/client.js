@@ -1,11 +1,6 @@
 import axios from 'axios'
 
-const REVAL_BASE_URL = 'http://api.reval.net'
-const REVAL_USER = 'REDACTED_USER'
-const REVAL_PASS = 'REDACTED_PASS'
-
-// Auth client — talks directly to Reval for token
-const authApi = axios.create({ baseURL: REVAL_BASE_URL, timeout: 15000 })
+const REVAL_USER = import.meta.env.VITE_REVAL_USER
 
 // Data client — goes through Vite proxy with disk cache
 const api = axios.create({ baseURL: '/cached-api', timeout: 240000 })
@@ -34,17 +29,10 @@ api.interceptors.response.use(
   },
 )
 
-export async function getToken() {
-  const { data } = await authApi.get('/api/get-token', {
-    params: { username: REVAL_USER, password: REVAL_PASS },
-  })
-  return data
-}
-
 export async function authenticate() {
-  const token = await getToken()
-  localStorage.setItem('reval_token', token.access_token)
-  return token
+  const { data } = await api.get('/auth')
+  localStorage.setItem('reval_token', data.access_token)
+  return data
 }
 
 // --- Helpers ---

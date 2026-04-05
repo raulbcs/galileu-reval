@@ -27,6 +27,7 @@ function App() {
     if (!window.confirm('Limpar todo o cache do servidor? Os dados serao buscados novamente da Reval.')) return
     await clearServerCache()
     queryClient.clear()
+    alert('Cache limpo! Os dados serao atualizados automaticamente.')
   }
 
   function handleSelectProduto(codigo) {
@@ -94,7 +95,7 @@ function App() {
         {activeTab === 'home' && <HomePage onSelectProduto={handleSelectProduto} />}
         {activeTab === 'produtos' && <ProdutosPage onSelectProduto={handleSelectProduto} />}
         {activeTab === 'categorias' && <CategoriasPage />}
-        {activeTab === 'fornecedores' && <FornecedoresPage />}
+        {activeTab === 'fornecedores' && <FornecedoresPage onSelectProduto={handleSelectProduto} />}
         {activeTab === 'licencas' && <LicencasPage />}
       </main>
     </div>

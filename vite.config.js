@@ -4,4 +4,7 @@ import { revalCachePlugin } from './vite-reval-cache'
 
 export default defineConfig({
   plugins: [react(), revalCachePlugin()],
+  server: {
+    allowedHosts: ['.ts.net'],
+  },
 })

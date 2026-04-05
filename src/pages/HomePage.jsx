@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { useProduto, useProdutoByCodBarras, useProdutos } from '../hooks/useRevalApi'
+import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
 
 const SEARCH_TYPES = [
@@ -8,6 +8,7 @@ const SEARCH_TYPES = [
   { key: 'barcode', label: 'Cod. Barras' },
 ]
 
+const MIN_CHARS = 3
 const PAGE_SIZE = 30
 
 export function HomePage({ onSelectProduto }) {
@@ -15,31 +16,33 @@ export function HomePage({ onSelectProduto }) {
   const [searchType, setSearchType] = useState('nome')
   const [page, setPage] = useState(1)
 
-  const { data: produtoCodigo, isLoading: loadingCodigo } = useProduto(
-    searchType === 'codigo' ? query : ''
-  )
-  const { data: produtoBarra, isLoading: loadingBarra } = useProdutoByCodBarras(
-    searchType === 'barcode' ? query : ''
-  )
-  const { data: todosProdutos, isLoading: loadingAll } = useProdutos(
-    searchType === 'nome' && query.length >= 2 ? true : undefined
+  const minChars = query.length >= MIN_CHARS
+  const { data: todosProdutos, isLoading: loading } = useProdutos(
+    minChars ? true : undefined
   )
 
-  const resultadosNome = useMemo(() => {
-    if (searchType !== 'nome' || !query || !todosProdutos) return []
+  const resultados = useMemo(() => {
+    if (!minChars || !todosProdutos) return []
     const q = query.trim().toLowerCase()
-    return todosProdutos.filter(
-      (p) =>
-        p.nome?.toLowerCase().includes(q) ||
-        p.descricao?.toLowerCase().includes(q)
-    )
-  }, [searchType, query, todosProdutos])
+    if (searchType === 'nome') {
+      return todosProdutos.filter(
+        (p) =>
+          p.nome?.toLowerCase().includes(q) ||
+          p.descricao?.toLowerCase().includes(q)
+      )
+    }
+    if (searchType === 'codigo') {
+      return todosProdutos.filter((p) => p.codigo?.toString().includes(q))
+    }
+    if (searchType === 'barcode') {
+      return todosProdutos.filter((p) => p.codigoBarras?.toString().includes(q))
+    }
+    return []
+  }, [searchType, query, todosProdutos, minChars])
 
-  const totalPages = Math.ceil(resultadosNome.length / PAGE_SIZE)
-  const paginaResultados = resultadosNome.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const totalPages = Math.ceil(resultados.length / PAGE_SIZE)
+  const paginaResultados = resultados.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  const loading = loadingCodigo || loadingBarra || loadingAll
-  const hasSearched = query.length > 0
   const [elapsed, setElapsed] = useState(0)
   const timerRef = useRef(null)
 
@@ -52,10 +55,6 @@ export function HomePage({ onSelectProduto }) {
     }
     return () => clearInterval(timerRef.current)
   }, [loading])
-
-  let singleProduto = null
-  if (searchType === 'codigo') singleProduto = produtoCodigo
-  if (searchType === 'barcode') singleProduto = produtoBarra
 
   return (
     <div className="home-page">
@@ -93,13 +92,7 @@ export function HomePage({ onSelectProduto }) {
 
       {loading && <div className="loading">Aguarde, carregando a lista de produtos... ({elapsed}s)</div>}
 
-      {searchType !== 'nome' && hasSearched && !loading && singleProduto?.codigo && (
-        <div className="search-result">
-          <ProdutoCard produto={singleProduto} onClick={onSelectProduto} />
-        </div>
-      )}
-
-      {searchType === 'nome' && !loading && resultadosNome.length > 0 && (
+      {!loading && minChars && paginaResultados.length > 0 && (
         <>
           <div className="search-results-grid">
             {paginaResultados.map((p) => (
@@ -109,18 +102,14 @@ export function HomePage({ onSelectProduto }) {
           {totalPages > 1 && (
             <div className="pagination">
               <button disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</button>
-              <span>{page} / {totalPages} ({resultadosNome.length} resultados)</span>
+              <span>{page} / {totalPages} ({resultados.length} resultados)</span>
               <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Proximo</button>
             </div>
           )}
         </>
       )}
 
-      {hasSearched && !loading && searchType !== 'nome' && !singleProduto?.codigo && (
-        <div className="empty">Nenhum produto encontrado.</div>
-      )}
-
-      {searchType === 'nome' && query.length >= 2 && !loading && resultadosNome.length === 0 && (
+      {minChars && !loading && resultados.length === 0 && (
         <div className="empty">Nenhum produto encontrado.</div>
       )}
     </div>

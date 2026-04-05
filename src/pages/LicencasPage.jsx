@@ -1,17 +1,69 @@
-import { useLicencas } from '../hooks/useRevalApi'
+import { useState } from 'react'
+import { useLicencas, useProdutosByLicenca } from '../hooks/useRevalApi'
+import { ProdutoCard } from '../components/ProdutoCard'
 
-export function LicencasPage() {
-  const { data, isLoading, error } = useLicencas()
+const PAGE_SIZE = 30
 
-  if (isLoading) return <div className="loading">Carregando licenças...</div>
+export function LicencasPage({ onSelectProduto }) {
+  const [selected, setSelected] = useState(null)
+  const [page, setPage] = useState(1)
+
+  const { data: licencas, isLoading: loadingLic, error } = useLicencas()
+  const { data: produtos, isLoading: loadingProd } = useProdutosByLicenca(selected?.descricao)
+
+  const totalPages = Math.ceil((produtos?.length || 0) / PAGE_SIZE)
+  const paginaResultados = produtos?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) || []
+
+  if (loadingLic) return <div className="loading">Carregando licencas...</div>
   if (error) return <div className="error">Erro: {error.message}</div>
+
+  if (selected) {
+    return (
+      <div className="page">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button className="btn-back" onClick={() => { setSelected(null); setPage(1) }}>← Voltar</button>
+          <h2>{selected.descricao}</h2>
+        </div>
+
+        {loadingProd && <div className="loading">Carregando produtos...</div>}
+
+        {!loadingProd && paginaResultados.length > 0 && (
+          <>
+            <div className="search-results-grid">
+              {paginaResultados.map((p) => (
+                <ProdutoCard key={p.codigo} produto={p} onClick={onSelectProduto} />
+              ))}
+            </div>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</button>
+                <span>{page} / {totalPages} ({produtos.length} resultados)</span>
+                <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Proximo</button>
+              </div>
+            )}
+          </>
+        )}
+
+        {!loadingProd && produtos?.length === 0 && (
+          <div className="empty">Nenhum produto encontrado para esta licenca.</div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="page">
-      <h2>Licenças</h2>
+      <h2>Licencas</h2>
       <div className="tag-grid">
-        {data?.map((l) => (
-          <span key={l.licenca} className="tag">{l.descricao}</span>
+        {licencas?.map((l) => (
+          <span
+            key={l.licenca}
+            className="tag"
+            style={{ cursor: 'pointer' }}
+            onClick={() => { setSelected(l); setPage(1) }}
+          >
+            {l.descricao}
+          </span>
         ))}
       </div>
     </div>

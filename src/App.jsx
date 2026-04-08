@@ -7,6 +7,7 @@ import { ProdutoDetalhePage } from './pages/ProdutoDetalhePage'
 import { CategoriasPage } from './pages/CategoriasPage'
 import { FornecedoresPage } from './pages/FornecedoresPage'
 import { LicencasPage } from './pages/LicencasPage'
+import { ListasPage } from './pages/ListasPage'
 
 const TABS = [
   { key: 'home', label: 'Inicio' },
@@ -14,6 +15,7 @@ const TABS = [
   { key: 'categorias', label: 'Categorias' },
   { key: 'fornecedores', label: 'Fornecedores' },
   { key: 'licencas', label: 'Licencas' },
+  { key: 'listas', label: 'Listas' },
 ]
 
 function App() {
@@ -94,9 +96,10 @@ function App() {
       <main className="app-content">
         {activeTab === 'home' && <HomePage onSelectProduto={handleSelectProduto} />}
         {activeTab === 'produtos' && <ProdutosPage onSelectProduto={handleSelectProduto} />}
-        {activeTab === 'categorias' && <CategoriasPage />}
+        {activeTab === 'categorias' && <CategoriasPage onSelectProduto={handleSelectProduto} />}
         {activeTab === 'fornecedores' && <FornecedoresPage onSelectProduto={handleSelectProduto} />}
-        {activeTab === 'licencas' && <LicencasPage />}
+        {activeTab === 'licencas' && <LicencasPage onSelectProduto={handleSelectProduto} />}
+        {activeTab === 'listas' && <ListasPage onSelectProduto={handleSelectProduto} />}
       </main>
     </div>
   )

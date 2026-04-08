@@ -1,8 +1,18 @@
+import { useEffect, useState } from 'react'
 import { useImagens, useProduto } from '../hooks/useRevalApi'
+import { traduzirEstoque } from '../utils/estoque'
 
 export function ProdutoDetalhePage({ codigo, onBack }) {
   const { data: produto, isLoading, error } = useProduto(codigo)
   const { data: imagens, isLoading: loadingImagens } = useImagens(codigo)
+  const [imagemAmpliada, setImagemAmpliada] = useState(null)
+
+  useEffect(() => {
+    if (!imagemAmpliada) return
+    function onKey(e) { if (e.key === 'Escape') setImagemAmpliada(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [imagemAmpliada])
 
   if (isLoading) {
     return (
@@ -31,6 +41,10 @@ export function ProdutoDetalhePage({ codigo, onBack }) {
           <img
             src={`/cached-images/${produto.codigo}`}
             alt={produto.nome}
+            onClick={(e) => {
+              const src = e.target.src
+              if (src && e.target.style.display !== 'none') setImagemAmpliada(src)
+            }}
             onError={(e) => { e.target.style.display = 'none' }}
           />
         </div>
@@ -51,7 +65,7 @@ export function ProdutoDetalhePage({ codigo, onBack }) {
               <tr><td className="label">Embalagem</td><td>{produto.embalagem || '-'}</td></tr>
               <tr><td className="label">Peso</td><td>{produto.peso || '-'} kg</td></tr>
               <tr><td className="label">Dimensoes (A x L x C)</td><td>{produto.altura} x {produto.largura} x {produto.comprimento} cm</td></tr>
-              <tr><td className="label">Estoque</td><td>{produto.estoque}</td></tr>
+              <tr><td className="label">Estoque</td><td>{traduzirEstoque(produto.estoque)}</td></tr>
               <tr><td className="label">Lista</td><td>{produto.lista || '-'}</td></tr>
               <tr><td className="label">Referencia</td><td>{produto.referencia || '-'}</td></tr>
               <tr className="preco-row"><td className="label">Preco</td><td className="preco">R$ {produto.preco}</td></tr>
@@ -73,15 +87,26 @@ export function ProdutoDetalhePage({ codigo, onBack }) {
         <div className="detalhe-galeria">
           <h3>Imagens ({imagens.length})</h3>
           <div className="galeria-grid">
-            {imagens.map((img) => (
-              <div key={img.id} className="galeria-item">
-                <img
-                  src={`data:image/jpeg;base64,${img.arquivo}`}
-                  alt={img.nome}
-                />
-              </div>
-            ))}
+            {imagens.map((img) => {
+              const src = `data:image/jpeg;base64,${img.arquivo}`
+              return (
+                <div key={img.id} className="galeria-item">
+                  <img
+                    src={src}
+                    alt={img.nome}
+                    onClick={() => setImagemAmpliada(src)}
+                  />
+                </div>
+              )
+            })}
           </div>
+        </div>
+      )}
+
+      {imagemAmpliada && (
+        <div className="lightbox-overlay" onClick={() => setImagemAmpliada(null)}>
+          <button className="lightbox-close" onClick={() => setImagemAmpliada(null)}>&times;</button>
+          <img className="lightbox-img" src={imagemAmpliada} alt="Imagem ampliada" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
     </div>

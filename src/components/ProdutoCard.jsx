@@ -1,4 +1,5 @@
 import { useImagemCapa } from '../hooks/useRevalApi'
+import { traduzirEstoque } from '../utils/estoque'
 
 export function ProdutoCard({ produto, onClick }) {
   const { data: imgUrl, isLoading } = useImagemCapa(produto.codigo)
@@ -21,7 +22,7 @@ export function ProdutoCard({ produto, onClick }) {
         </div>
         <div className="produto-detalhes">
           <span>Código: {produto.codigo}</span>
-          <span>Estoque: {produto.estoque}</span>
+          <span>Estoque: {traduzirEstoque(produto.estoque)}</span>
           <span>Emb: {produto.embalagem}</span>
         </div>
       </div>

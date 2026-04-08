@@ -1,16 +1,36 @@
-# React + Vite
+# Galileu
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Catálogo de produtos da Papelaria Galileu, consumindo a API Reval.
 
-Currently, two official plugins are available:
+## Como funciona
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Os dados da API Reval são pouco mutáveis, então o app atua como um **proxy com cache em disco** — todas as chamadas passam pelo servidor Vite, que cacheia as respostas em `cache/`:
 
-## React Compiler
+- **API**: cache de 12h (produtos, categorias, fornecedores, licenças)
+- **Imagens**: cache de 72h no disco
+- **Token**: cacheado até expirar, nunca é deletado no clear
+- O cache é preenchido automaticamente na primeira request (miss) e serve do disco nas seguintes (hit)
+- O botão "Limpar cache" limpa `cache/api/` e `cache/images/` e re-cacheia os produtos automaticamente
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Setup
 
-## Expanding the ESLint configuration
+```bash
+cp .env.example .env
+# Preencha .env com suas credenciais Reval
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Variáveis de ambiente
+
+| Variável | Descrição |
+|---|---|
+| `REVAL_USER` | Usuário da API Reval (server-side) |
+| `REVAL_PASS` | Senha da API Reval (server-side) |
+| `VITE_REVAL_USER` | Mesmo valor de `REVAL_USER`, exposto ao client para parâmetros de query |
+
+## Stack
+
+- React + Vite
+- React Query
+- Vite plugin custom (`vite-reval-cache.js`) para proxy + cache

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useImagens, useProduto } from '../hooks/useRevalApi'
 import { traduzirEstoque } from '../utils/estoque'
 
-export function ProdutoDetalhePage({ codigo, onBack }) {
+export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
   const { data: produto, isLoading, error } = useProduto(codigo)
   const { data: imagens, isLoading: loadingImagens } = useImagens(codigo)
   const [imagemAmpliada, setImagemAmpliada] = useState(null)
@@ -56,7 +56,7 @@ export function ProdutoDetalhePage({ codigo, onBack }) {
             <tbody>
               <tr><td className="label">Codigo</td><td>{produto.codigo}</td></tr>
               <tr><td className="label">Codigo de Barras</td><td>{produto.codigoBarras || '-'}</td></tr>
-              <tr><td className="label">Marca</td><td>{produto.marca}</td></tr>
+              <tr><td className="label">Marca</td><td><span className="detail-link" onClick={() => onNavigateTo?.('fornecedores', produto.marca)}>{produto.marca}</span></td></tr>
               <tr><td className="label">NCM</td><td>{produto.ncm || '-'}</td></tr>
               <tr><td className="label">CFOP</td><td>{produto.cfop || '-'}</td></tr>
               <tr><td className="label">CST</td><td>{produto.cst || '-'}</td></tr>
@@ -66,7 +66,7 @@ export function ProdutoDetalhePage({ codigo, onBack }) {
               <tr><td className="label">Peso</td><td>{produto.peso || '-'} kg</td></tr>
               <tr><td className="label">Dimensoes (A x L x C)</td><td>{produto.altura} x {produto.largura} x {produto.comprimento} cm</td></tr>
               <tr><td className="label">Estoque</td><td>{traduzirEstoque(produto.estoque)}</td></tr>
-              <tr><td className="label">Lista</td><td>{produto.lista || '-'}</td></tr>
+              <tr><td className="label">Lista</td><td>{produto.lista ? <span className="detail-link" onClick={() => onNavigateTo?.('listas', produto.lista)}>{produto.lista}</span> : '-'}</td></tr>
               <tr><td className="label">Referencia</td><td>{produto.referencia || '-'}</td></tr>
               <tr className="preco-row"><td className="label">Preco</td><td className="preco">R$ {produto.preco}</td></tr>
             </tbody>

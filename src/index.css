@@ -77,6 +77,12 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
   gap: 24px;
 }
 
+.app-title {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.app-title:hover { color: var(--accent); }
+
 .tabs {
   display: flex;
   gap: 4px;
@@ -134,6 +140,45 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
 }
 
 .loading-screen.error { color: #e53e3e; }
+
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 320px;
+  padding: 32px;
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.login-form h1 { font-size: 20px; text-align: center; margin: 0 0 8px; }
+.login-form input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+}
+.login-form button {
+  padding: 10px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 15px;
+  cursor: pointer;
+}
+.login-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-error { color: #e53e3e; font-size: 13px; text-align: center; }
 
 .loading, .error {
   text-align: center;
@@ -481,6 +526,14 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
   width: 160px;
   font-size: 13px;
 }
+
+.detail-link {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.detail-link:hover { opacity: 0.8; }
 
 .preco-row .preco {
   font-weight: 700;

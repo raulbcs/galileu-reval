@@ -1,12 +1,14 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
 
 const PAGE_SIZE = 30
 
-export function ListasPage({ onSelectProduto }) {
-  const [selected, setSelected] = useState(null)
+export function ListasPage({ onSelectProduto, initialSelected, onClearPreSelect }) {
+  const [selected, setSelected] = useState(initialSelected || null)
   const [page, setPage] = useState(1)
+
+  useEffect(() => { if (initialSelected) onClearPreSelect?.() }, [])
 
   const { data: todosProdutos, isLoading } = useProdutos(true)
 

@@ -25,14 +25,25 @@ api.interceptors.response.use(
   (error) => {
     const ms = Date.now() - (error.config?._start || Date.now())
     console.error(`[reval-api] ← ${error.config?.url} ERROR ${error.response?.status || 'N/A'} (${ms}ms): ${error.message}`)
+    if (error.response?.status === 401 && !error.config.url?.includes('/login')) {
+      window.dispatchEvent(new Event('auth-expired'))
+    }
     throw error
   },
 )
 
-export async function authenticate() {
-  const { data } = await api.get('/auth')
-  localStorage.setItem('reval_token', data.access_token)
+export async function login(senha) {
+  const { data } = await api.post('/login', { senha })
   return data
+}
+
+export async function checkAuth() {
+  try {
+    await api.get('/auth')
+    return true
+  } catch {
+    return false
+  }
 }
 
 // --- Helpers ---

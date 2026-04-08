@@ -1,12 +1,14 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useFornecedores, useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
 
 const PAGE_SIZE = 30
 
-export function FornecedoresPage({ onSelectProduto }) {
-  const [selected, setSelected] = useState(null)
+export function FornecedoresPage({ onSelectProduto, initialSelected, onClearPreSelect }) {
+  const [selected, setSelected] = useState(initialSelected ? { descricao: initialSelected } : null)
   const [page, setPage] = useState(1)
+
+  useEffect(() => { if (initialSelected) onClearPreSelect?.() }, [])
 
   const { data: fornecedores, isLoading: loadingForn, error } = useFornecedores()
   const { data: todosProdutos, isLoading: loadingProd } = useProdutos(selected ? true : undefined)

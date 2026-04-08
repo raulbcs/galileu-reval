@@ -11,6 +11,38 @@ const CACHE_DIR = path.resolve('cache')
 const TOKEN_PATH = path.join(CACHE_DIR, 'token.json')
 const API_TTL = 12 * 60 * 60 * 1000   // 12h
 const IMAGE_TTL = 72 * 60 * 60 * 1000  // 72h
+const APP_PASS = process.env.APP_PASS || 'galileu'
+const SESSION_TTL = 24 * 60 * 60 * 1000 // 24h
+const HMAC_KEY = crypto.randomBytes(32).toString('hex')
+
+function signSession(payload) {
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64url')
+  const sig = crypto.createHmac('sha256', HMAC_KEY).update(data).digest('base64url')
+  return `${data}.${sig}`
+}
+
+function verifySession(cookie) {
+  if (!cookie) return null
+  const [data, sig] = cookie.split('.')
+  if (!data || !sig) return null
+  const expected = crypto.createHmac('sha256', HMAC_KEY).update(data).digest('base64url')
+  if (sig !== expected) return null
+  try {
+    const payload = JSON.parse(Buffer.from(data, 'base64url').toString())
+    if (Date.now() > payload.exp) return null
+    return payload
+  } catch { return null }
+}
+
+function parseCookies(req) {
+  const header = req.headers.cookie || ''
+  const cookies = {}
+  header.split(';').forEach((c) => {
+    const [k, ...v] = c.trim().split('=')
+    if (k) cookies[k] = v.join('=')
+  })
+  return cookies
+}
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
@@ -144,6 +176,49 @@ export function revalCachePlugin() {
           res.statusCode = 404
           res.end('Not found')
         }
+      })
+
+      // --- Login ---
+      server.middlewares.use('/cached-api/login', (req, res, next) => {
+        if (req.method !== 'POST') { res.statusCode = 405; res.end(); return }
+
+        let body = ''
+        req.on('data', (chunk) => { body += chunk })
+        req.on('end', () => {
+          try {
+            const { senha } = JSON.parse(body)
+            if (senha !== APP_PASS) {
+              res.statusCode = 401
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ error: 'Senha incorreta' }))
+              return
+            }
+            const token = signSession({ exp: Date.now() + SESSION_TTL })
+            res.setHeader('Set-Cookie', `session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${SESSION_TTL / 1000}`)
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: true }))
+          } catch {
+            res.statusCode = 400
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ error: 'Invalid request' }))
+          }
+        })
+      })
+
+      // --- Session check (all /cached-api and /cached-images) ---
+      server.middlewares.use((req, res, next) => {
+        if (!req.url?.startsWith('/cached-api/') && !req.url?.startsWith('/cached-images/')) return next()
+        // Login endpoint is exempt
+        if (req.url === '/cached-api/login') return next()
+        const cookies = parseCookies(req)
+        const session = verifySession(cookies.session)
+        if (!session) {
+          res.statusCode = 401
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ error: 'Unauthorized' }))
+          return
+        }
+        next()
       })
 
       // --- Auth (proxy token request so credentials never reach the browser) ---

@@ -6,5 +6,6 @@ export default defineConfig({
   plugins: [react(), revalCachePlugin()],
   server: {
     allowedHosts: ['.ts.net'],
+    historyApiFallback: true,
   },
 })

@@ -1,18 +1,36 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useImagens, useProduto } from '../hooks/useRevalApi'
 import { traduzirEstoque } from '../utils/estoque'
 
 export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
   const { data: produto, isLoading, error } = useProduto(codigo)
   const { data: imagens, isLoading: loadingImagens } = useImagens(codigo)
-  const [imagemAmpliada, setImagemAmpliada] = useState(null)
+  const [lightboxIndex, setLightboxIndex] = useState(-1)
+
+  const allImages = useMemo(() => {
+    if (!imagens?.length) return []
+    return imagens.map((img) => `data:image/jpeg;base64,${img.arquivo}`)
+  }, [imagens])
+
+  function openLightbox(index) { setLightboxIndex(index) }
+  function closeLightbox() { setLightboxIndex(-1) }
+  function navigateImage(dir) {
+    const next = (lightboxIndex + dir + allImages.length) % allImages.length
+    setLightboxIndex(next)
+  }
+
+  const lightboxOpen = lightboxIndex >= 0 && allImages.length > 0
 
   useEffect(() => {
-    if (!imagemAmpliada) return
-    function onKey(e) { if (e.key === 'Escape') setImagemAmpliada(null) }
+    if (!lightboxOpen) return
+    function onKey(e) {
+      if (e.key === 'Escape') closeLightbox()
+      else if (e.key === 'ArrowRight') navigateImage(1)
+      else if (e.key === 'ArrowLeft') navigateImage(-1)
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [imagemAmpliada])
+  }, [lightboxOpen, lightboxIndex, allImages.length])
 
   if (isLoading) {
     return (
@@ -41,17 +59,14 @@ export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
           <img
             src={`/cached-images/${produto.codigo}`}
             alt={produto.nome}
-            onClick={(e) => {
-              const src = e.target.src
-              if (src && e.target.style.display !== 'none') setImagemAmpliada(src)
-            }}
+            onClick={() => { if (allImages.length) openLightbox(0) }}
             onError={(e) => { e.target.style.display = 'none' }}
           />
         </div>
 
         <div className="detalhe-info">
-          <h2>{produto.descricao}</h2>
-
+          <h2>{produto.nome}</h2>
+          <h3 className="detalhe-descricao">{produto.descricao}</h3>
           <table className="detalhe-table">
             <tbody>
               <tr><td className="label">Codigo</td><td>{produto.codigo}</td></tr>
@@ -87,14 +102,14 @@ export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
         <div className="detalhe-galeria">
           <h3>Imagens ({imagens.length})</h3>
           <div className="galeria-grid">
-            {imagens.map((img) => {
+            {imagens.map((img, i) => {
               const src = `data:image/jpeg;base64,${img.arquivo}`
               return (
                 <div key={img.id} className="galeria-item">
                   <img
                     src={src}
                     alt={img.nome}
-                    onClick={() => setImagemAmpliada(src)}
+                    onClick={() => openLightbox(i)}
                   />
                 </div>
               )
@@ -103,10 +118,17 @@ export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
         </div>
       )}
 
-      {imagemAmpliada && (
-        <div className="lightbox-overlay" onClick={() => setImagemAmpliada(null)}>
-          <button className="lightbox-close" onClick={() => setImagemAmpliada(null)}>&times;</button>
-          <img className="lightbox-img" src={imagemAmpliada} alt="Imagem ampliada" onClick={(e) => e.stopPropagation()} />
+      {lightboxOpen && (
+        <div className="lightbox-overlay" onClick={closeLightbox}>
+          <button className="lightbox-close" onClick={closeLightbox}>&times;</button>
+          {allImages.length > 1 && (
+            <>
+              <button className="lightbox-arrow lightbox-prev" onClick={(e) => { e.stopPropagation(); navigateImage(-1) }}>&#8249;</button>
+              <button className="lightbox-arrow lightbox-next" onClick={(e) => { e.stopPropagation(); navigateImage(1) }}>&#8250;</button>
+            </>
+          )}
+          <img className="lightbox-img" src={allImages[lightboxIndex]} alt="Imagem ampliada" onClick={(e) => e.stopPropagation()} />
+          {allImages.length > 1 && <div className="lightbox-counter" onClick={(e) => e.stopPropagation()}>{lightboxIndex + 1} / {allImages.length}</div>}
         </div>
       )}
     </div>

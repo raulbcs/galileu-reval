@@ -274,7 +274,7 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
   flex: 1;
 }
 
-.produto-info h3 { font-size: 14px; }
+.produto-info h3 { font-size: 14px; margin-bottom: 2px; }
 
 .descricao {
   font-size: 13px;
@@ -507,7 +507,14 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
 
 .detalhe-info h2 {
   font-size: 22px;
-  margin-bottom: 16px;
+  margin: 0 0 4px;
+}
+
+.detalhe-descricao {
+  font-size: 16px;
+  color: var(--text);
+  opacity: 0.75;
+  margin: 0 0 16px;
 }
 
 .detalhe-table {
@@ -615,3 +622,33 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
 }
 
 .lightbox-close:hover { background: rgba(255, 255, 255, 0.3); }
+
+.lightbox-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  font-size: 36px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.lightbox-arrow:hover { background: rgba(255, 255, 255, 0.3); }
+.lightbox-prev { left: 16px; }
+.lightbox-next { right: 16px; }
+
+.lightbox-counter {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}

@@ -1,7 +1,5 @@
 import axios from 'axios'
 
-const REVAL_USER = import.meta.env.VITE_REVAL_USER
-
 // Data client — goes through Vite proxy with disk cache
 const api = axios.create({ baseURL: '/cached-api', timeout: 240000 })
 
@@ -77,57 +75,57 @@ export async function getLicencas() {
 // --- Produtos ---
 
 export async function getProdutos() {
-  const { data } = await api.get(buildUrl('/api/produto/get-all-tabela', { usuario: REVAL_USER }))
+  const { data } = await api.get(buildUrl('/api/produto/get-all-tabela'))
   return data
 }
 
 export async function getProdutosPage(pageIndex = 1, pageSize = 20) {
-  const { data } = await api.get(buildUrl('/api/produto/get-page-tabela', { usuario: REVAL_USER, pageIndex, pageSize }))
+  const { data } = await api.get(buildUrl('/api/produto/get-page-tabela', { pageIndex, pageSize }))
   return data
 }
 
 export async function getProduto(codigo) {
-  const { data } = await api.get(buildUrl('/api/produto/get-tabela', { usuario: REVAL_USER, codigo }))
+  const { data } = await api.get(buildUrl('/api/produto/get-tabela', { codigo }))
   return data
 }
 
 export async function getProdutoByCodBarras(codigoBarras) {
-  const { data } = await api.get(buildUrl('/api/produto/get-tabela-codbar', { usuario: REVAL_USER, codigoBarras }))
+  const { data } = await api.get(buildUrl('/api/produto/get-tabela-codbar', { codigoBarras }))
   return data
 }
 
 export async function getProdutosByCategoria(categoria) {
-  const { data } = await api.get(buildUrl('/api/produto/get-produto-categoria', { usuario: REVAL_USER, categoria }))
+  const { data } = await api.get(buildUrl('/api/produto/get-produto-categoria', { categoria }))
   return data
 }
 
 export async function getProdutosBySubCategoria(categoria, subcategoria) {
-  const { data } = await api.get(buildUrl('/api/produto/get-produto-categoria-sub', { usuario: REVAL_USER, categoria, subcategoria }))
+  const { data } = await api.get(buildUrl('/api/produto/get-produto-categoria-sub', { categoria, subcategoria }))
   return data
 }
 
 export async function getProdutosByLicenca(licenca) {
-  const { data } = await api.get(buildUrl('/api/produto/get-produto-licenca', { usuario: REVAL_USER, licenca }))
+  const { data } = await api.get(buildUrl('/api/produto/get-produto-licenca', { licenca }))
   return data
 }
 
 export async function getProdutosByLicencaCategoria(licenca, categoria) {
-  const { data } = await api.get(buildUrl('/api/produto/get-produto-licen-categ', { usuario: REVAL_USER, licenca, categoria }))
+  const { data } = await api.get(buildUrl('/api/produto/get-produto-licen-categ', { licenca, categoria }))
   return data
 }
 
 export async function getProdutosByLista(codigoLista) {
-  const { data } = await api.get(buildUrl('/api/produto/get-produto-lista', { usuario: REVAL_USER, codigoLista }))
+  const { data } = await api.get(buildUrl('/api/produto/get-produto-lista', { codigoLista }))
   return data
 }
 
 export async function getProdutosByMarca(marca) {
-  const { data } = await api.get(buildUrl('/api/produto/get-produto-marca', { usuario: REVAL_USER, marca }))
+  const { data } = await api.get(buildUrl('/api/produto/get-produto-marca', { marca }))
   return data
 }
 
 export async function getProdutosByValor(valorDe, valorAte) {
-  const { data } = await api.get(buildUrl('/api/produto/get-produto-valor', { usuario: REVAL_USER, valorDe, valorAte }))
+  const { data } = await api.get(buildUrl('/api/produto/get-produto-valor', { valorDe, valorAte }))
   return data
 }
 

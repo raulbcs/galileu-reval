@@ -11,7 +11,7 @@ const CACHE_DIR = path.resolve('cache')
 const TOKEN_PATH = path.join(CACHE_DIR, 'token.json')
 const API_TTL = 12 * 60 * 60 * 1000   // 12h
 const IMAGE_TTL = 72 * 60 * 60 * 1000  // 72h
-const APP_PASS = process.env.APP_PASS || 'galileu'
+const APP_PASSWORD = process.env.APP_PASSWORD || 'password'
 const SESSION_TTL = 24 * 60 * 60 * 1000 // 24h
 const HMAC_KEY = crypto.randomBytes(32).toString('hex')
 
@@ -187,7 +187,7 @@ export function revalCachePlugin() {
         req.on('end', () => {
           try {
             const { senha } = JSON.parse(body)
-            if (senha !== APP_PASS) {
+            if (senha !== APP_PASSWORD) {
               res.statusCode = 401
               res.setHeader('Content-Type', 'application/json')
               res.end(JSON.stringify({ error: 'Senha incorreta' }))
@@ -271,8 +271,14 @@ export function revalCachePlugin() {
 
       // --- API cache ---
       server.middlewares.use('/cached-api', async (req, res, next) => {
-        const url = req.url
+        let url = req.url
         if (!url || url === '/') return next()
+
+        // Inject usuario param server-side so client doesn't need REVAL_USER
+        if (url.includes('/produto/') && !url.includes('usuario=')) {
+          const sep = url.includes('?') ? '&' : '?'
+          url += `${sep}usuario=${encodeURIComponent(REVAL_USER)}`
+        }
 
         const filePath = cachePath('api', url)
 

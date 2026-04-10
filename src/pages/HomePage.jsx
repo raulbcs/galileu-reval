@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
+import { Pagination } from '../components/Pagination'
 import { formatBytes } from '../utils/format'
 
 const SEARCH_TYPES = [
@@ -107,11 +108,7 @@ export function HomePage({ onSelectProduto }) {
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="pagination">
-              <button disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</button>
-              <span>{page} / {totalPages} ({resultados.length} resultados)</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Proximo</button>
-            </div>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           )}
         </>
       )}

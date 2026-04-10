@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
+import { Pagination } from '../components/Pagination'
 import { formatBytes } from '../utils/format'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 21
 
 export function ProdutosPage({ onSelectProduto }) {
   const [page, setPage] = useState(1)
@@ -50,15 +51,7 @@ export function ProdutosPage({ onSelectProduto }) {
         ))}
       </div>
 
-      <div className="pagination">
-        <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-          Anterior
-        </button>
-        <span>Página {page} de {pageData.totalPages}</span>
-        <button disabled={page >= pageData.totalPages} onClick={() => setPage((p) => p + 1)}>
-          Próxima
-        </button>
-      </div>
+      <Pagination page={page} totalPages={pageData.totalPages} onPageChange={setPage} />
     </div>
   )
 }

@@ -344,6 +344,40 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
   cursor: not-allowed;
 }
 
+.pagination-info {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+}
+
+.pagination-info:hover {
+  background: var(--accent-bg);
+}
+
+.pagination-jump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.pagination-jump input {
+  width: 56px;
+  padding: 4px 8px;
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-family: var(--sans);
+  font-size: 14px;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.pagination-jump input::-webkit-inner-spin-button,
+.pagination-jump input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
 .page {
   animation: fadeIn 0.2s ease;
 }

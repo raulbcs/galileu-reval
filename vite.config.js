@@ -1,15 +1,25 @@
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { revalCachePlugin } from './vite-reval-cache'
 
 export default defineConfig({
-  plugins: [react(), revalCachePlugin()],
+  plugins: [react(), revalCachePlugin(), sentryVitePlugin({
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+  })],
+
   server: {
     allowedHosts: ['.ts.net'],
     historyApiFallback: true,
   },
+
   preview: {
     host: '0.0.0.0',
     historyApiFallback: true,
   },
+
+  build: {
+    sourcemap: true
+  }
 })

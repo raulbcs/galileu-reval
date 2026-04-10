@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import zlib from 'node:zlib'
 import axios from 'axios'
 import crypto from 'node:crypto'
 import { config } from 'dotenv'
@@ -287,10 +288,13 @@ export function revalCachePlugin() {
           const age = Date.now() - stat.mtimeMs
           if (age < API_TTL) {
             console.log(`[reval-cache] API HIT: ${url} (${(stat.size / 1024).toFixed(1)}KB from disk)`)
+            const raw = fs.readFileSync(filePath)
+            const gz = zlib.gzipSync(raw)
             res.setHeader('Content-Type', 'application/json')
-            res.setHeader('Content-Length', stat.size)
+            res.setHeader('Content-Encoding', 'gzip')
+            res.setHeader('Content-Length', gz.length)
             res.setHeader('X-Cache', 'HIT')
-            fs.createReadStream(filePath).pipe(res)
+            res.end(gz)
             return
           }
           console.log(`[reval-cache] API STALE: ${url} (${Math.round(age / 3600000)}h old), re-fetching...`)
@@ -308,11 +312,14 @@ export function revalCachePlugin() {
           ensureDir(path.dirname(filePath))
           fs.writeFileSync(filePath, JSON.stringify(response.data))
 
+          const json = JSON.stringify(response.data)
           console.log(`[reval-cache] API fetched: ${url} (${(jsonSize / 1024).toFixed(1)}KB) in ${Date.now() - start}ms`)
+          const gz = zlib.gzipSync(json)
           res.setHeader('Content-Type', 'application/json')
-          res.setHeader('Content-Length', Buffer.byteLength(JSON.stringify(response.data)))
+          res.setHeader('Content-Encoding', 'gzip')
+          res.setHeader('Content-Length', gz.length)
           res.setHeader('X-Cache', 'MISS')
-          res.end(JSON.stringify(response.data))
+          res.end(gz)
         } catch (err) {
           console.error(`[reval-cache] API error: ${url} — ${err.message} (status: ${err.response?.status || 'N/A'}) in ${Date.now() - start}ms`)
           res.statusCode = err.response?.status || 500

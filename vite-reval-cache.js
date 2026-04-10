@@ -113,9 +113,7 @@ export function revalCachePlugin() {
   ensureDir(path.join(CACHE_DIR, 'images'))
   ensureDir(path.join(CACHE_DIR, 'api'))
 
-  return {
-    name: 'vite-plugin-reval-cache',
-    configureServer(server) {
+  function setupMiddlewares(server) {
       const REVAL_USER = process.env.REVAL_USER
       const allProductsUrl = `/api/produto/get-all-tabela?usuario=${REVAL_USER}`
       const allProductsCache = cachePath('api', allProductsUrl)
@@ -346,6 +344,11 @@ export function revalCachePlugin() {
           res.end(JSON.stringify({ error: err.message }))
         }
       })
-    },
+  }
+
+  return {
+    name: 'vite-plugin-reval-cache',
+    configureServer: setupMiddlewares,
+    configurePreviewServer: setupMiddlewares,
   }
 }

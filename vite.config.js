@@ -8,4 +8,8 @@ export default defineConfig({
     allowedHosts: ['.ts.net'],
     historyApiFallback: true,
   },
+  preview: {
+    host: '0.0.0.0',
+    historyApiFallback: true,
+  },
 })

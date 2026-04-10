@@ -32,12 +32,26 @@ O estado da aplicação é refletido na URL:
 
 ## Setup
 
+### Desenvolvimento
+
 ```bash
 cp .env.example .env
 # Preencha .env com suas credenciais Reval e senha do app
 npm install
 npm run dev
 ```
+
+### Produção
+
+```bash
+cp .env.example .env
+# Preencha .env com suas credenciais Reval, senha do app e Sentry DSN
+npm install
+npm run build    # minifica JS/CSS para dist/
+npm run preview  # serve dist/ com proxy, cache e auth
+```
+
+Variáveis `VITE_*` são lidas no build, não no runtime — se mudar o Sentry DSN, rode `npm run build` novamente.
 
 ## Variáveis de ambiente
 
@@ -46,6 +60,7 @@ npm run dev
 | `REVAL_USER` | Usuário da API Reval (server-side only) |
 | `REVAL_PASS` | Senha da API Reval (server-side only) |
 | `APP_PASSWORD` | Senha de acesso ao app (default: `galileu`) |
+| `VITE_SENTRY_DSN` | DSN do Sentry (opcional, só ativa em produção) |
 
 ## Stack
 

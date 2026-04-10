@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
+import { Pagination } from '../components/Pagination'
 
 const PAGE_SIZE = 30
 
-export function ListasPage({ onSelectProduto, initialSelected, onClearPreSelect }) {
+export function ListasPage({ onSelectProduto, onNavigateTo, initialSelected, onClearPreSelect }) {
   const [selected, setSelected] = useState(initialSelected || null)
   const [page, setPage] = useState(1)
 
@@ -33,7 +34,7 @@ export function ListasPage({ onSelectProduto, initialSelected, onClearPreSelect 
     return (
       <div className="page">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <button className="btn-back" onClick={() => { setSelected(null); setPage(1) }}>← Voltar</button>
+          <button className="btn-back" onClick={() => { setSelected(null); setPage(1); onNavigateTo?.('listas') }}>← Voltar</button>
           <h2>{selected}</h2>
         </div>
 
@@ -45,11 +46,7 @@ export function ListasPage({ onSelectProduto, initialSelected, onClearPreSelect 
               ))}
             </div>
             {totalPages > 1 && (
-              <div className="pagination">
-                <button disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span>{page} / {totalPages} ({produtosFiltrados.length} resultados)</span>
-                <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Proximo</button>
-              </div>
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             )}
           </>
         )}
@@ -70,7 +67,7 @@ export function ListasPage({ onSelectProduto, initialSelected, onClearPreSelect 
             key={lista}
             className="tag"
             style={{ cursor: 'pointer' }}
-            onClick={() => { setSelected(lista); setPage(1) }}
+            onClick={() => { setSelected(lista); setPage(1); onNavigateTo?.('listas', lista) }}
           >
             {lista}
           </span>

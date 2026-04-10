@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useCategorias, useProdutosByCategoria } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
+import { Pagination } from '../components/Pagination'
 
 const PAGE_SIZE = 30
 
-export function CategoriasPage({ onSelectProduto }) {
+export function CategoriasPage({ onSelectProduto, onNavigateTo }) {
   const [selected, setSelected] = useState(null)
   const [page, setPage] = useState(1)
 
@@ -21,7 +22,7 @@ export function CategoriasPage({ onSelectProduto }) {
     return (
       <div className="page">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <button className="btn-back" onClick={() => { setSelected(null); setPage(1) }}>← Voltar</button>
+          <button className="btn-back" onClick={() => { setSelected(null); setPage(1); onNavigateTo?.('categorias') }}>← Voltar</button>
           <h2>{selected.descricao}</h2>
         </div>
 
@@ -35,11 +36,7 @@ export function CategoriasPage({ onSelectProduto }) {
               ))}
             </div>
             {totalPages > 1 && (
-              <div className="pagination">
-                <button disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span>{page} / {totalPages} ({produtos.length} resultados)</span>
-                <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Proximo</button>
-              </div>
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             )}
           </>
         )}
@@ -60,7 +57,7 @@ export function CategoriasPage({ onSelectProduto }) {
             key={cat.id}
             className="tag"
             style={{ cursor: 'pointer' }}
-            onClick={() => { setSelected(cat); setPage(1) }}
+            onClick={() => { setSelected(cat); setPage(1); onNavigateTo?.('categorias', cat.descricao) }}
           >
             {cat.descricao}
           </span>

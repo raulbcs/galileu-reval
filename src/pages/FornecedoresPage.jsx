@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useFornecedores, useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
+import { Pagination } from '../components/Pagination'
 
 const PAGE_SIZE = 30
 
-export function FornecedoresPage({ onSelectProduto, initialSelected, onClearPreSelect }) {
+export function FornecedoresPage({ onSelectProduto, onNavigateTo, initialSelected, onClearPreSelect }) {
   const [selected, setSelected] = useState(initialSelected ? { descricao: initialSelected } : null)
   const [page, setPage] = useState(1)
 
@@ -28,7 +29,7 @@ export function FornecedoresPage({ onSelectProduto, initialSelected, onClearPreS
     return (
       <div className="page">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <button className="btn-back" onClick={() => { setSelected(null); setPage(1) }}>← Voltar</button>
+          <button className="btn-back" onClick={() => { setSelected(null); setPage(1); onNavigateTo?.('fornecedores') }}>← Voltar</button>
           <h2>{selected.descricao}</h2>
         </div>
 
@@ -42,11 +43,7 @@ export function FornecedoresPage({ onSelectProduto, initialSelected, onClearPreS
               ))}
             </div>
             {totalPages > 1 && (
-              <div className="pagination">
-                <button disabled={page <= 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span>{page} / {totalPages} ({produtosFiltrados.length} resultados)</span>
-                <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Proximo</button>
-              </div>
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             )}
           </>
         )}
@@ -67,7 +64,7 @@ export function FornecedoresPage({ onSelectProduto, initialSelected, onClearPreS
             key={f.codigo}
             className="tag"
             style={{ cursor: 'pointer' }}
-            onClick={() => { setSelected(f); setPage(1) }}
+            onClick={() => { setSelected(f); setPage(1); onNavigateTo?.('fornecedores', f.descricao) }}
           >
             {f.descricao}
           </span>

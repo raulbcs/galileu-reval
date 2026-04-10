@@ -142,10 +142,10 @@ function App() {
       <main className="app-content">
         {currentTab === 'home' && <HomePage onSelectProduto={handleSelectProduto} />}
         {currentTab === 'produtos' && <ProdutosPage onSelectProduto={handleSelectProduto} />}
-        {currentTab === 'categorias' && <CategoriasPage onSelectProduto={handleSelectProduto} />}
-        {currentTab === 'fornecedores' && <FornecedoresPage onSelectProduto={handleSelectProduto} initialSelected={currentTab === 'fornecedores' ? preSelect : null} onClearPreSelect={() => setPreSelect(null)} />}
-        {currentTab === 'licencas' && <LicencasPage onSelectProduto={handleSelectProduto} />}
-        {currentTab === 'listas' && <ListasPage onSelectProduto={handleSelectProduto} initialSelected={currentTab === 'listas' ? preSelect : null} onClearPreSelect={() => setPreSelect(null)} />}
+        {currentTab === 'categorias' && <CategoriasPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} />}
+        {currentTab === 'fornecedores' && <FornecedoresPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} initialSelected={currentTab === 'fornecedores' ? preSelect : null} onClearPreSelect={() => setPreSelect(null)} />}
+        {currentTab === 'licencas' && <LicencasPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} />}
+        {currentTab === 'listas' && <ListasPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} initialSelected={currentTab === 'listas' ? preSelect : null} onClearPreSelect={() => setPreSelect(null)} />}
       </main>
     </div>
   )

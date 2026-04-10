@@ -288,6 +288,7 @@ export function revalCachePlugin() {
           if (age < API_TTL) {
             console.log(`[reval-cache] API HIT: ${url} (${(stat.size / 1024).toFixed(1)}KB from disk)`)
             res.setHeader('Content-Type', 'application/json')
+            res.setHeader('Content-Length', stat.size)
             res.setHeader('X-Cache', 'HIT')
             fs.createReadStream(filePath).pipe(res)
             return
@@ -309,6 +310,7 @@ export function revalCachePlugin() {
 
           console.log(`[reval-cache] API fetched: ${url} (${(jsonSize / 1024).toFixed(1)}KB) in ${Date.now() - start}ms`)
           res.setHeader('Content-Type', 'application/json')
+          res.setHeader('Content-Length', Buffer.byteLength(JSON.stringify(response.data)))
           res.setHeader('X-Cache', 'MISS')
           res.end(JSON.stringify(response.data))
         } catch (err) {

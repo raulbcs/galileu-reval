@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
+import { formatBytes } from '../utils/format'
 
 const SEARCH_TYPES = [
   { key: 'nome', label: 'Nome' },
@@ -17,7 +18,7 @@ export function HomePage({ onSelectProduto }) {
   const [page, setPage] = useState(1)
 
   const minChars = query.length >= MIN_CHARS
-  const { data: todosProdutos, isLoading: loading } = useProdutos(
+  const { data: todosProdutos, isLoading: loading, progress } = useProdutos(
     minChars ? true : undefined
   )
 
@@ -90,7 +91,13 @@ export function HomePage({ onSelectProduto }) {
         </div>
       </form>
 
-      {loading && <div className="loading">Aguarde, carregando a lista de produtos... ({elapsed}s)</div>}
+      {loading && (
+        <div className="loading">
+          {progress.total > 0
+            ? `Baixando produtos... ${formatBytes(progress.loaded)} / ${formatBytes(progress.total)}`
+            : `Aguarde, carregando a lista de produtos... (${elapsed}s)`}
+        </div>
+      )}
 
       {!loading && minChars && paginaResultados.length > 0 && (
         <>

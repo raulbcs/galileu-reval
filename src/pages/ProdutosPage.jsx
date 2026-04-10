@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
+import { formatBytes } from '../utils/format'
 
 const PAGE_SIZE = 20
 
 export function ProdutosPage({ onSelectProduto }) {
   const [page, setPage] = useState(1)
-  const { data: produtos, isLoading, error } = useProdutos(true)
+  const { data: produtos, isLoading, error, progress } = useProdutos(true)
   const [elapsed, setElapsed] = useState(0)
   const timerRef = useRef(null)
 
@@ -30,7 +31,13 @@ export function ProdutosPage({ onSelectProduto }) {
     }
   }, [produtos, page])
 
-  if (isLoading) return <div className="loading">Carregando produtos... ({elapsed}s)</div>
+  if (isLoading) return (
+    <div className="loading">
+      {progress.total > 0
+        ? `Baixando produtos... ${formatBytes(progress.loaded)} / ${formatBytes(progress.total)}`
+        : `Carregando produtos... (${elapsed}s)`}
+    </div>
+  )
   if (error) return <div className="error">Erro: {error.message}</div>
 
   return (

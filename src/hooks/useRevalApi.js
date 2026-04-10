@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState, useCallback } from 'react'
 import {
   getCategorias,
   getFornecedores,
@@ -38,12 +39,19 @@ export function useProdutosPage(pageIndex = 1, pageSize = 20) {
 }
 
 export function useProdutos(enabled) {
-  return useQuery({
+  const [progress, setProgress] = useState({ loaded: 0, total: 0 })
+  const onProgress = useCallback((e) => {
+    setProgress({ loaded: e.loaded, total: e.total || 0 })
+  }, [])
+
+  const query = useQuery({
     queryKey: ['produtos', 'all'],
-    queryFn: getProdutos,
+    queryFn: () => getProdutos({ onProgress }),
     staleTime: 10 * 60 * 1000,
     enabled: !!enabled,
   })
+
+  return { ...query, progress }
 }
 
 export function useProduto(codigo) {

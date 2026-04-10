@@ -74,8 +74,10 @@ export async function getLicencas() {
 
 // --- Produtos ---
 
-export async function getProdutos() {
-  const { data } = await api.get(buildUrl('/api/produto/get-all-tabela'))
+export async function getProdutos({ onProgress } = {}) {
+  const { data } = await api.get(buildUrl('/api/produto/get-all-tabela'), {
+    onDownloadProgress: onProgress,
+  })
   return data
 }
 

@@ -7,7 +7,7 @@ Catálogo de produtos da Reval através da API Reval, para a Papelaria Galileu.
 O app é um **proxy com cache em disco** — todas as chamadas passam pelo servidor Vite, que cacheia as respostas em `cache/`:
 
 - **API**: cache de 12h (produtos, categorias, fornecedores, licenças)
-- **Imagens**: cache de 72h no servidor + cache do browser (30 dias)
+- **Imagens**: cache de 1 semana no servidor + cache do browser (30 dias)
 - **Token Reval**: cacheado até expirar, não é deletado no clear
 - O cache é preenchido automaticamente na primeira request (miss) e serve do disco nas seguintes (hit)
 - O botão "Limpar cache" limpa `cache/api/` e re-cacheia os produtos automaticamente (imagens não são limpas)

@@ -5,6 +5,7 @@ const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN
 export function initSentry() {
   if (!SENTRY_DSN || !import.meta.env.PROD) return
 
+  console.log('[Sentry] Initializing in production mode')
   Sentry.init({
     dsn: SENTRY_DSN,
     integrations: [

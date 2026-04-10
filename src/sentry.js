@@ -11,6 +11,9 @@ export function initSentry() {
       Sentry.browserTracingIntegration(),
     ],
     tracesSampleRate: 1.0,
+    sendDefaultPii: true,
+    enableLogs: true,
+    tracePropagationTargets: ['localhost', /\.ts\.net/],
     environment: import.meta.env.MODE,
   })
 }

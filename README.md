@@ -47,6 +47,10 @@ npm run dev
 cp .env.example .env
 # Preencha .env com suas credenciais Reval, senha do app e Sentry DSN
 npm install
+
+# Source maps legíveis no Sentry (opcional, gera .env.sentry-build-plugin)
+npx @sentry/wizard@latest -i sourcemaps --saas --org rb-software-c9 --project galileu-reval
+
 npm run build    # minifica JS/CSS para dist/
 npm run preview  # serve dist/ com proxy, cache e auth
 ```

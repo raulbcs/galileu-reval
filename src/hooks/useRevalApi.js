@@ -47,7 +47,6 @@ export function useProdutos(enabled) {
   const query = useQuery({
     queryKey: ['produtos', 'all'],
     queryFn: () => getProdutos({ onProgress }),
-    staleTime: 10 * 60 * 1000,
     enabled: !!enabled,
   })
 

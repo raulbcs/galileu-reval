@@ -116,21 +116,33 @@ export function revalCachePlugin() {
   return {
     name: 'vite-plugin-reval-cache',
     configureServer(server) {
-      // Pre-cache all products on server start
       const REVAL_USER = process.env.REVAL_USER
       const allProductsUrl = `/api/produto/get-all-tabela?usuario=${REVAL_USER}`
       const allProductsCache = cachePath('api', allProductsUrl)
+      let produtosPromise = null
 
+      function fetchProdutos() {
+        if (!produtosPromise) {
+          console.log('[reval-cache] Fetching all products...')
+          produtosPromise = apiGet(`${REVAL_BASE_URL}${allProductsUrl}`, { timeout: 240000 })
+            .then((response) => {
+              ensureDir(path.dirname(allProductsCache))
+              fs.writeFileSync(allProductsCache, JSON.stringify(response.data))
+              console.log(`[reval-cache] Cached ${Array.isArray(response.data) ? response.data.length : '?'} products`)
+              return response.data
+            })
+            .catch((err) => {
+              console.error('[reval-cache] Fetch products failed:', err.message)
+              throw err
+            })
+            .finally(() => { produtosPromise = null })
+        }
+        return produtosPromise
+      }
+
+      // Pre-cache all products on server start
       if (!fs.existsSync(allProductsCache)) {
-        console.log('[reval-cache] Pre-caching all products...')
-        apiGet(`${REVAL_BASE_URL}${allProductsUrl}`, { timeout: 240000 })
-          .then((response) => {
-            fs.writeFileSync(allProductsCache, JSON.stringify(response.data))
-            console.log(`[reval-cache] Pre-cached ${Array.isArray(response.data) ? response.data.length : '?'} products`)
-          })
-          .catch((err) => {
-            console.error('[reval-cache] Pre-cache failed:', err.message)
-          })
+        fetchProdutos()
       } else {
         console.log('[reval-cache] Products already cached')
       }
@@ -252,19 +264,9 @@ export function revalCachePlugin() {
           }
         }
         rmDir(path.join(CACHE_DIR, 'api'))
-        rmDir(path.join(CACHE_DIR, 'images'))
 
-        const REVAL_USER = process.env.REVAL_USER
-        const allProductsUrl = `/api/produto/get-all-tabela?usuario=${REVAL_USER}`
-        apiGet(`${REVAL_BASE_URL}${allProductsUrl}`, { timeout: 240000 })
-          .then((response) => {
-            ensureDir(path.join(CACHE_DIR, 'api'))
-            fs.writeFileSync(cachePath('api', allProductsUrl), JSON.stringify(response.data))
-            console.log(`[reval-cache] Re-cached ${Array.isArray(response.data) ? response.data.length : '?'} products after cache clear`)
-          })
-          .catch((err) => {
-            console.error('[reval-cache] Re-cache after clear failed:', err.message)
-          })
+        fetchProdutos()
+          .catch(() => {}) // already logged in fetchProdutos
 
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({ ok: true, removed: count }))
@@ -298,6 +300,23 @@ export function revalCachePlugin() {
             return
           }
           console.log(`[reval-cache] API STALE: ${url} (${Math.round(age / 3600000)}h old), re-fetching...`)
+        }
+
+        // If products fetch is in progress, wait for it instead of starting a new one
+        if (url === allProductsUrl && produtosPromise) {
+          console.log(`[reval-cache] API waiting for in-progress fetch: ${url}`)
+          try {
+            const data = await produtosPromise
+            const gz = zlib.gzipSync(JSON.stringify(data))
+            res.setHeader('Content-Type', 'application/json')
+            res.setHeader('Content-Encoding', 'gzip')
+            res.setHeader('Content-Length', gz.length)
+            res.setHeader('X-Cache', 'WAIT')
+            res.end(gz)
+            return
+          } catch {
+            // fall through to normal MISS path
+          }
         }
 
         const start = Date.now()

@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react(), revalCachePlugin(), sentryVitePlugin({
     org: process.env.SENTRY_ORG,
     project: process.env.SENTRY_PROJECT,
+    telemetry: false,
   })],
 
   server: {

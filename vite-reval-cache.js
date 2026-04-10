@@ -2,10 +2,21 @@ import fs from 'node:fs'
 import path from 'node:path'
 import zlib from 'node:zlib'
 import axios from 'axios'
-import crypto from 'node:crypto'
+import * as Sentry from '@sentry/node'
 import { config } from 'dotenv'
+import { signSession, verifySession, parseCookies, cachePath } from './src/server/crypto.js'
 
 config()
+
+if (process.env.VITE_SENTRY_DSN && process.env.NODE_ENV === 'production') {
+  Sentry.init({
+    dsn: process.env.VITE_SENTRY_DSN,
+    tracesSampleRate: 1.0,
+    sendDefaultPii: true,
+    enableLogs: true,
+    environment: process.env.NODE_ENV,
+  })
+}
 
 const REVAL_BASE_URL = 'http://api.reval.net'
 const CACHE_DIR = path.resolve('cache')
@@ -14,44 +25,9 @@ const API_TTL = 12 * 60 * 60 * 1000   // 12h
 const IMAGE_TTL = 7 * 24 * 60 * 60 * 1000  // 1 week
 const APP_PASSWORD = process.env.APP_PASSWORD || 'password'
 const SESSION_TTL = 24 * 60 * 60 * 1000 // 24h
-const HMAC_KEY = crypto.randomBytes(32).toString('hex')
-
-function signSession(payload) {
-  const data = Buffer.from(JSON.stringify(payload)).toString('base64url')
-  const sig = crypto.createHmac('sha256', HMAC_KEY).update(data).digest('base64url')
-  return `${data}.${sig}`
-}
-
-function verifySession(cookie) {
-  if (!cookie) return null
-  const [data, sig] = cookie.split('.')
-  if (!data || !sig) return null
-  const expected = crypto.createHmac('sha256', HMAC_KEY).update(data).digest('base64url')
-  if (sig !== expected) return null
-  try {
-    const payload = JSON.parse(Buffer.from(data, 'base64url').toString())
-    if (Date.now() > payload.exp) return null
-    return payload
-  } catch { return null }
-}
-
-function parseCookies(req) {
-  const header = req.headers.cookie || ''
-  const cookies = {}
-  header.split(';').forEach((c) => {
-    const [k, ...v] = c.trim().split('=')
-    if (k) cookies[k] = v.join('=')
-  })
-  return cookies
-}
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-}
-
-function cachePath(prefix, key) {
-  const file = crypto.createHash('md5').update(key).digest('hex')
-  return path.join(CACHE_DIR, prefix, file)
 }
 
 async function fetchToken() {

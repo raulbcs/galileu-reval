@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
 import { login, checkAuth, clearServerCache } from './api/client'
+import { TABS, buildUrl, readUrl } from './utils/routing'
 import { HomePage } from './pages/HomePage'
 import { ProdutosPage } from './pages/ProdutosPage'
 import { ProdutoDetalhePage } from './pages/ProdutoDetalhePage'
@@ -8,34 +9,6 @@ import { CategoriasPage } from './pages/CategoriasPage'
 import { FornecedoresPage } from './pages/FornecedoresPage'
 import { LicencasPage } from './pages/LicencasPage'
 import { ListasPage } from './pages/ListasPage'
-
-const TABS = [
-  { key: 'home', label: 'Busca' },
-  { key: 'produtos', label: 'Produtos' },
-  { key: 'categorias', label: 'Categorias' },
-  { key: 'fornecedores', label: 'Fornecedores' },
-  { key: 'licencas', label: 'Licencas' },
-  { key: 'listas', label: 'Listas' },
-]
-
-function buildUrl(tab, filter, produto) {
-  if (produto) return `/produto/${produto}`
-  if (!tab || tab === 'home') return '/'
-  if (filter) return `/${tab}/${encodeURIComponent(filter)}`
-  return `/${tab}`
-}
-
-function readUrl() {
-  const path = window.location.pathname.replace(/\/+$/, '')
-  if (!path || path === '/') return { tab: 'home', filter: null, produto: null }
-
-  const parts = path.slice(1).split('/')
-  if (parts[0] === 'produto' && parts[1]) return { tab: null, filter: null, produto: parts[1] }
-
-  const tab = TABS.find((t) => t.key === parts[0])?.key || 'home'
-  const filter = parts[1] ? decodeURIComponent(parts[1]) : null
-  return { tab, filter, produto: null }
-}
 
 function App() {
   const initial = readUrl()

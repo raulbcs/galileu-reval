@@ -9,6 +9,7 @@ export function initSentry() {
     dsn: SENTRY_DSN,
     integrations: [
       Sentry.browserTracingIntegration(),
+      Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
     ],
     tracesSampleRate: 1.0,
     sendDefaultPii: true,

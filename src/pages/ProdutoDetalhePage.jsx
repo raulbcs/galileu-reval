@@ -59,6 +59,7 @@ export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
           <img
             src={`/cached-images/${produto.codigo}`}
             alt={produto.nome}
+            loading="lazy"
             onClick={() => { if (allImages.length) openLightbox(0) }}
             onError={(e) => { e.target.style.display = 'none' }}
           />
@@ -109,6 +110,7 @@ export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
                   <img
                     src={src}
                     alt={img.nome}
+                    loading="lazy"
                     onClick={() => openLightbox(i)}
                   />
                 </div>

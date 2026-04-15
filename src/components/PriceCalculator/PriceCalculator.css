@@ -1,0 +1,429 @@
+.calc-section {
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.calc-section h3 {
+  font-size: 18px;
+  margin: 0 0 20px;
+  color: var(--text-h);
+}
+
+.calc-custo {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.calc-custo .calc-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calc-readonly {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+  font-family: var(--mono);
+}
+
+.calc-slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.calc-slider-head span:first-child {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.calc-slider-head .calc-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
+/* Range slider */
+.calc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+.calc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 3px solid var(--bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+
+.calc-range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.calc-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 3px solid var(--bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.calc-range::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+}
+
+/* Cards grid */
+.calc-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .calc-cards { grid-template-columns: 1fr; }
+}
+
+.calc-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.calc-card-head {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bg);
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calc-card-head-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calc-card-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.calc-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.calc-card-link:hover {
+  color: #fff;
+}
+
+.calc-price-sug {
+  padding: 20px 16px 12px;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--mono);
+  text-align: center;
+}
+
+.calc-sliders {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.calc-slider-group {
+  display: block;
+  cursor: pointer;
+}
+
+.calc-breakdown {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.calc-bd-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 3px 0;
+  color: var(--text);
+}
+
+.calc-bd-row span:last-child {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+.calc-bd-impostos {
+  color: var(--text);
+  font-style: italic;
+  border-top: 1px dashed var(--border);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+.calc-bd-total {
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+  padding-top: 6px;
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.calc-bd-lucro {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.calc-error {
+  padding: 20px;
+  text-align: center;
+  color: #e53e3e;
+  font-size: 14px;
+}
+
+/* Mode tabs (ML: Clássico / Premium / Full) */
+.calc-mode-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.calc-mode-tabs-empty {
+  height: 35px;
+}
+
+.calc-mode-tab {
+  flex: 1;
+  padding: 8px 4px;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-family: var(--sans);
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.calc-mode-tab:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.calc-mode-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Number input for lucro */
+.calc-input-group {
+  display: block;
+}
+
+.calc-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.calc-input-prefix {
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--code-bg);
+  border-right: 1px solid var(--border);
+  font-family: var(--mono);
+}
+
+.calc-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-h);
+  font-size: 14px;
+  font-family: var(--mono);
+  font-weight: 700;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.calc-input::-webkit-inner-spin-button,
+.calc-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.calc-input:focus {
+  box-shadow: inset 0 0 0 2px var(--accent-border);
+}
+
+/* Taxa fixa block (ML) */
+.calc-taxa-fixa-block {
+  display: block;
+}
+
+.calc-taxa-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.calc-taxa-faixa {
+  font-size: 12px;
+  color: var(--text-h);
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+/* Tooltip base (shared) */
+.calc-taxa-faixa-tooltip,
+.calc-impostos-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: help;
+}
+
+.calc-taxa-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--sans);
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  flex-shrink: 0;
+}
+
+.calc-taxa-faixa-tooltip:hover::after,
+.calc-taxa-faixa-tooltip:focus::after,
+.calc-impostos-tooltip:hover::after,
+.calc-impostos-tooltip:focus::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 10;
+  padding: 12px 14px;
+  background: var(--text-h);
+  color: var(--bg);
+  font-size: 12px;
+  font-family: var(--sans);
+  font-weight: 400;
+  line-height: 1.6;
+  border-radius: 8px;
+  white-space: pre-line;
+  min-width: 300px;
+  max-width: 360px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.calc-taxa-faixa-tooltip:hover::before,
+.calc-taxa-faixa-tooltip:focus::before,
+.calc-impostos-tooltip:hover::before,
+.calc-impostos-tooltip:focus::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 16px;
+  border: 6px solid transparent;
+  border-top-color: var(--text-h);
+}
+
+.calc-taxa-toggle {
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: var(--sans);
+  font-weight: 600;
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.calc-taxa-toggle:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* Impostos block */
+.calc-impostos-block {
+  display: block;
+}
+
+.calc-impostos-label {
+  font-size: 11px;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+/* Frete block (Shopee) */
+.calc-frete-block {
+  display: block;
+}
+
+.calc-frete-info {
+  font-size: 11px;
+  color: var(--accent);
+  opacity: 0.8;
+  margin-top: 4px;
+  font-weight: 500;
+}

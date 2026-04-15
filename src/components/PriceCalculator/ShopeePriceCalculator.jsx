@@ -106,6 +106,10 @@ export function ShopeePriceCalculator({ custo }) {
             { label: 'Total Descontos', value: fmt(bd.descontos), className: 'calc-bd-total' },
             { label: 'Lucro Líquido', value: fmt(liquido), className: 'calc-bd-lucro' },
           ]} />
+          <div className="calc-price-bottom">
+            <span>Preço Final</span>
+            <span className="calc-price-bottom-val">{fmt(preco)}</span>
+          </div>
         </>
       ) : (
         <div className="calc-error">Soma das taxas &gt;= 100%</div>

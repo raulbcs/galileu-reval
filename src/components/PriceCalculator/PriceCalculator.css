@@ -427,3 +427,28 @@
   margin-top: 4px;
   font-weight: 500;
 }
+
+/* Price bottom */
+.calc-price-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--code-bg);
+}
+
+.calc-price-bottom span:first-child {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calc-price-bottom-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--mono);
+}

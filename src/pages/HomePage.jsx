@@ -3,9 +3,11 @@ import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
 import { Pagination } from '../components/Pagination'
 import { formatBytes } from '../utils/format'
+import { gerarSku } from '../utils/sku'
 
 const SEARCH_TYPES = [
   { key: 'nome', label: 'Nome' },
+  { key: 'sku', label: 'SKU Galileu' },
   { key: 'codigo', label: 'Codigo Reval' },
   { key: 'barcode', label: 'Cod. Barras' },
 ]
@@ -23,6 +25,15 @@ export function HomePage({ onSelectProduto }) {
     minChars ? true : undefined
   )
 
+  const skuMap = useMemo(() => {
+    if (!todosProdutos) return new Map()
+    const map = new Map()
+    for (const p of todosProdutos) {
+      map.set(p.codigo, gerarSku(p.nome, p.marca, p.descricao, p.codigo))
+    }
+    return map
+  }, [todosProdutos])
+
   const resultados = useMemo(() => {
     if (!minChars || !todosProdutos) return []
     const q = query.trim().toLowerCase()
@@ -33,6 +44,10 @@ export function HomePage({ onSelectProduto }) {
           p.descricao?.toLowerCase().includes(q)
       )
     }
+    if (searchType === 'sku') {
+      const qu = q.toUpperCase()
+      return todosProdutos.filter((p) => skuMap.get(p.codigo)?.includes(qu))
+    }
     if (searchType === 'codigo') {
       return todosProdutos.filter((p) => p.codigo?.toString().includes(q))
     }
@@ -40,7 +55,7 @@ export function HomePage({ onSelectProduto }) {
       return todosProdutos.filter((p) => p.codigoBarras?.toString().includes(q))
     }
     return []
-  }, [searchType, query, todosProdutos, minChars])
+  }, [searchType, query, todosProdutos, minChars, skuMap])
 
   const totalPages = Math.ceil(resultados.length / PAGE_SIZE)
   const paginaResultados = resultados.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -82,6 +97,7 @@ export function HomePage({ onSelectProduto }) {
           <input
             type="text"
             placeholder={
+              searchType === 'sku' ? 'Ex: CDRN-SNSU-SPDR' :
               searchType === 'codigo' ? 'Ex: 088590' :
               searchType === 'barcode' ? 'Ex: 7891040351916' :
               'Ex: ABAFADOR'

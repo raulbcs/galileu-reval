@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useImagens, useProduto } from '../hooks/useRevalApi'
 import { traduzirEstoque } from '../utils/estoque'
+import { gerarSku } from '../utils/sku'
 
 export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
   const { data: produto, isLoading, error } = useProduto(codigo)
   const { data: imagens, isLoading: loadingImagens } = useImagens(codigo)
   const [lightboxIndex, setLightboxIndex] = useState(-1)
+  const [copied, setCopied] = useState(false)
 
   const allImages = useMemo(() => {
     if (!imagens?.length) return []
@@ -20,6 +22,15 @@ export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
   }
 
   const lightboxOpen = lightboxIndex >= 0 && allImages.length > 0
+
+  const sku = produto ? gerarSku(produto.nome, produto.marca, produto.descricao, produto.codigo) : ''
+
+  const copiarSku = useCallback(() => {
+    navigator.clipboard.writeText(sku).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }, [sku])
 
   useEffect(() => {
     if (!lightboxOpen) return
@@ -68,6 +79,11 @@ export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
         <div className="detalhe-info">
           <h2>{produto.nome}</h2>
           <h3 className="detalhe-descricao">{produto.descricao}</h3>
+          <div className="sku-box">
+            <span className="sku-label">SKU GALILEU</span>
+            <span className="sku-code">{sku}</span>
+            <button className="sku-copy" onClick={copiarSku}>{copied ? 'Copiado!' : 'Copiar'}</button>
+          </div>
           <table className="detalhe-table">
             <tbody>
               <tr><td className="label">Codigo</td><td>{produto.codigo}</td></tr>

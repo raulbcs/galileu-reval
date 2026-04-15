@@ -1,5 +1,6 @@
 import { useImagemCapa } from '../hooks/useRevalApi'
 import { traduzirEstoque } from '../utils/estoque'
+import { gerarSku } from '../utils/sku'
 
 export function ProdutoCard({ produto, onClick }) {
   const { data: imgUrl, isLoading } = useImagemCapa(produto.codigo)
@@ -21,6 +22,7 @@ export function ProdutoCard({ produto, onClick }) {
           <span className="preco">R$ {produto.preco}</span>
         </div>
         <div className="produto-detalhes">
+          <span>SKU GALILEU: {gerarSku(produto.nome, produto.marca, produto.descricao, produto.codigo)}</span>
           <span>Código: {produto.codigo}</span>
           <span>Estoque: {traduzirEstoque(produto.estoque)}</span>
           <span>Emb: {produto.embalagem}</span>

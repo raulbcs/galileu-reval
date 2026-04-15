@@ -429,6 +429,30 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
   font-size: 16px;
 }
 
+.btn-export-xlsx {
+  margin-top: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-family: var(--sans);
+  font-weight: 600;
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-export-xlsx:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-export-xlsx:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Search */
 .search-form {
   width: 100%;
@@ -594,6 +618,35 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
 .sku-copy:hover {
   background: var(--accent);
   color: #fff;
+}
+
+.sku-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.btn-marketplace {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: var(--sans);
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--code-bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-marketplace:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
 .detalhe-table {

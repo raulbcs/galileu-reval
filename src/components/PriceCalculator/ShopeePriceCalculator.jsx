@@ -38,10 +38,7 @@ export function ShopeePriceCalculator({ custo }) {
   return (
     <div className="calc-card">
       <div className="calc-card-head">
-        <div className="calc-card-head-left">
-          <span>Shopee</span>
-          <span className="calc-card-badge">CNPJ</span>
-        </div>
+        <span>Shopee</span>
         <a
           className="calc-card-link"
           href="https://seller.br.shopee.cn/edu/article/26839/Comissao-para-vendedores-CNPJ-e-CPF-em-2026"

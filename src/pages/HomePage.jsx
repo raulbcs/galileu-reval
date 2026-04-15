@@ -1,9 +1,11 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useProdutos } from '../hooks/useRevalApi'
 import { ProdutoCard } from '../components/ProdutoCard'
 import { Pagination } from '../components/Pagination'
 import { formatBytes } from '../utils/format'
 import { gerarSku } from '../utils/sku'
+import { exportToXlsx } from '../utils/export'
+import { getProdutos } from '../api/client'
 
 const SEARCH_TYPES = [
   { key: 'nome', label: 'Nome' },
@@ -19,6 +21,7 @@ export function HomePage({ onSelectProduto }) {
   const [query, setQuery] = useState('')
   const [searchType, setSearchType] = useState('nome')
   const [page, setPage] = useState(1)
+  const [exporting, setExporting] = useState(false)
 
   const minChars = query.length >= MIN_CHARS
   const { data: todosProdutos, isLoading: loading, progress } = useProdutos(
@@ -73,11 +76,26 @@ export function HomePage({ onSelectProduto }) {
     return () => clearInterval(timerRef.current)
   }, [loading])
 
+  const handleExport = useCallback(async () => {
+    setExporting(true)
+    try {
+      const produtos = todosProdutos || await getProdutos()
+      exportToXlsx(produtos)
+    } catch {
+      alert('Erro ao exportar produtos.')
+    } finally {
+      setExporting(false)
+    }
+  }, [todosProdutos])
+
   return (
     <div className="home-page">
       <div className="welcome">
         <h1>Bem-vindo a Papelaria Galileu</h1>
         <p>Consulte produtos, categorias e fornecedores da Reval.</p>
+        <button className="btn-export-xlsx" onClick={handleExport} disabled={exporting}>
+          {exporting ? 'Exportando...' : 'Exportar todos para XLSX'}
+        </button>
       </div>
 
       <form className="search-form" onSubmit={(e) => e.preventDefault()}>

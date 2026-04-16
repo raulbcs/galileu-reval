@@ -18,33 +18,49 @@ export function SliderGroup({ label, value, display, min, max, step, onChange })
   )
 }
 
-export function LucroInput({ value, onChange, max = 100 }) {
+export function LucroInput({ value, onChange, custo }) {
+  const pct = custo > 0 ? ((value / custo) * 100) : 0
+
+  const handlePctChange = (raw) => {
+    const v = raw === '' ? 0 : Math.max(0, +raw || 0)
+    onChange(custo * v / 100)
+  }
+
+  const handleRsChange = (raw) => {
+    onChange(raw === '' ? 0 : Math.max(0, +raw || 0))
+  }
+
   return (
     <div className="calc-input-group">
       <div className="calc-slider-head">
         <span>Lucro Desejado</span>
+      </div>
+      <div className="calc-lucro-fields">
+        <div className="calc-input-wrap">
+          <span className="calc-input-prefix">%</span>
+          <input
+            type="number"
+            className="calc-input"
+            min="0"
+            step="0.1"
+            value={pct ? pct : ''}
+            placeholder="0"
+            onChange={e => handlePctChange(e.target.value)}
+          />
+        </div>
         <div className="calc-input-wrap">
           <span className="calc-input-prefix">R$</span>
           <input
             type="number"
             className="calc-input"
             min="0"
-            max="9999"
             step="0.1"
-            value={value}
-            onChange={e => onChange(Math.max(0, +e.target.value || 0))}
+            value={value || ''}
+            placeholder="0"
+            onChange={e => handleRsChange(e.target.value)}
           />
         </div>
       </div>
-      <input
-        type="range"
-        className="calc-range"
-        min={0}
-        max={max}
-        step={0.1}
-        value={Math.min(value, max)}
-        onChange={e => onChange(+e.target.value)}
-      />
     </div>
   )
 }

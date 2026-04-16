@@ -83,7 +83,7 @@ export function MLPriceCalculator({ custo }) {
         <>
           <div className="calc-price-sug">{fmt(preco)}</div>
           <div className="calc-sliders">
-            <LucroInput value={lucro} onChange={setLucro} max={Math.max(custo * 3, 50)} />
+            <LucroInput value={lucro} onChange={setLucro} custo={custo} />
             <SliderGroup label="Comissão" value={comissao} display={`${comissao}% · ${fmt(bd.comissaoVal)}`} min={0} max={25} step={0.1} onChange={setComissao} />
             <SliderGroup label="Ads" value={ads} display={`${ads}% · ${fmt(bd.adsVal)}`} min={0} max={20} step={0.1} onChange={setAds} />
             <div className="calc-taxa-fixa-block">

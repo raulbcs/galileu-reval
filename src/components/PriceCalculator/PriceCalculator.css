@@ -266,8 +266,14 @@
   display: block;
 }
 
-.calc-input-group .calc-range {
-  margin-top: 8px;
+.calc-lucro-fields {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.calc-lucro-fields .calc-input-wrap {
+  flex: 1;
 }
 
 .calc-input-wrap {

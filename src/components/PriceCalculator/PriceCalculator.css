@@ -266,6 +266,10 @@
   display: block;
 }
 
+.calc-input-group .calc-range {
+  margin-top: 8px;
+}
+
 .calc-input-wrap {
   display: flex;
   align-items: center;

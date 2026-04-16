@@ -18,7 +18,7 @@ export function SliderGroup({ label, value, display, min, max, step, onChange })
   )
 }
 
-export function LucroInput({ value, onChange }) {
+export function LucroInput({ value, onChange, max = 100 }) {
   return (
     <div className="calc-input-group">
       <div className="calc-slider-head">
@@ -30,12 +30,21 @@ export function LucroInput({ value, onChange }) {
             className="calc-input"
             min="0"
             max="9999"
-            step="0.5"
+            step="0.1"
             value={value}
             onChange={e => onChange(Math.max(0, +e.target.value || 0))}
           />
         </div>
       </div>
+      <input
+        type="range"
+        className="calc-range"
+        min={0}
+        max={max}
+        step={0.1}
+        value={Math.min(value, max)}
+        onChange={e => onChange(+e.target.value)}
+      />
     </div>
   )
 }

@@ -2,6 +2,8 @@ import { useState, useCallback } from 'react'
 import { calcPreco, breakdown, fmt, fmtFaixaML } from './priceCalc'
 import { SliderGroup, LucroInput, Breakdown } from './PriceSlider'
 
+const IMPOSTOS = 7.3
+
 const ML_MODES = [
   { key: 'classico', label: 'Clássico', comissao: 12, frete: 0 },
   { key: 'premium', label: 'Premium', comissao: 17, frete: 0 },
@@ -15,17 +17,6 @@ const ML_FAIXAS_TOOLTIP =
   '• R$29 – R$50 → R$6,50\n' +
   '• R$50 – R$79 → R$6,75\n' +
   '• ≥ R$79 → Isento'
-
-const IMPOSTOS_TOOLTIP =
-  'Simples Nacional – Anexo I (Papelarias):\n' +
-  '• Até R$180 mil/ano → 4,00%\n' +
-  '• R$180 – 360 mil → 7,30%\n' +
-  '• R$360 – 720 mil → 9,50%\n' +
-  '• R$720 mil – 1,8 mi → 10,70%\n' +
-  '• R$1,8 – 3,6 mi → 14,30%\n' +
-  '• R$3,6 – 4,8 mi → 19,00%\n\n' +
-  'Inclui: ICMS, PIS, COFINS, IRPJ, CSLL\n' +
-  'Pagos via DAS (guia única).'
 
 const RECEBIMENTO_TOOLTIP =
   'Taxa de Recebimento (Marketplace):\n' +
@@ -41,8 +32,7 @@ export function MLPriceCalculator({ custo }) {
   const [taxaFixaAuto, setTaxaFixaAuto] = useState(true)
   const [taxaFixaManual, setTaxaFixaManual] = useState(0)
   const [comissao, setComissao] = useState(12)
-  const [ads, setAds] = useState(5)
-  const [impostos, setImpostos] = useState(4)
+  const [ads, setAds] = useState(0)
   const [recebimento, setRecebimento] = useState(3)
   const [frete, setFrete] = useState(0)
 
@@ -55,12 +45,12 @@ export function MLPriceCalculator({ custo }) {
     }
   }, [])
 
-  const precoSemTaxa = calcPreco(custo, lucro, 0, comissao, ads, impostos, recebimento, frete) || custo
+  const precoSemTaxa = calcPreco(custo, lucro, 0, comissao, ads, IMPOSTOS, recebimento, frete) || custo
   const faixa = fmtFaixaML(precoSemTaxa)
   const taxaEfetiva = taxaFixaAuto ? faixa.taxa : taxaFixaManual
 
-  const preco = calcPreco(custo, lucro, taxaEfetiva, comissao, ads, impostos, recebimento, frete)
-  const bd = breakdown(preco, comissao, ads, taxaEfetiva, impostos, recebimento, frete)
+  const preco = calcPreco(custo, lucro, taxaEfetiva, comissao, ads, IMPOSTOS, recebimento, frete)
+  const bd = breakdown(preco, comissao, ads, taxaEfetiva, IMPOSTOS, recebimento, frete)
   const liquido = preco ? preco - custo - bd.descontos : 0
 
   return (
@@ -93,9 +83,9 @@ export function MLPriceCalculator({ custo }) {
         <>
           <div className="calc-price-sug">{fmt(preco)}</div>
           <div className="calc-sliders">
-            <LucroInput value={lucro} onChange={setLucro} />
-            <SliderGroup label="Comissão" value={comissao} display={comissao + '%'} min={0} max={25} step={0.5} onChange={setComissao} />
-            <SliderGroup label="Ads" value={ads} display={ads + '%'} min={0} max={20} step={0.5} onChange={setAds} />
+            <LucroInput value={lucro} onChange={setLucro} max={Math.max(custo * 3, 50)} />
+            <SliderGroup label="Comissão" value={comissao} display={`${comissao}% · ${fmt(bd.comissaoVal)}`} min={0} max={25} step={0.1} onChange={setComissao} />
+            <SliderGroup label="Ads" value={ads} display={`${ads}% · ${fmt(bd.adsVal)}`} min={0} max={20} step={0.1} onChange={setAds} />
             <div className="calc-taxa-fixa-block">
               <SliderGroup
                 label="Taxa Fixa"
@@ -103,7 +93,7 @@ export function MLPriceCalculator({ custo }) {
                 display={fmt(taxaEfetiva)}
                 min={0}
                 max={20}
-                step={0.25}
+                step={0.1}
                 onChange={v => { setTaxaFixaAuto(false); setTaxaFixaManual(v) }}
               />
               <div className="calc-taxa-info">
@@ -118,30 +108,15 @@ export function MLPriceCalculator({ custo }) {
                 )}
               </div>
             </div>
-            <SliderGroup label="Frete Absorvido" value={frete} display={fmt(frete)} min={0} max={30} step={0.5} onChange={setFrete} />
-            <div className="calc-impostos-block">
-              <SliderGroup
-                label="Impostos"
-                value={impostos}
-                display={impostos + '%'}
-                min={0}
-                max={30}
-                step={0.5}
-                onChange={setImpostos}
-              />
-              <div className="calc-impostos-tooltip" data-tooltip={IMPOSTOS_TOOLTIP}>
-                <span className="calc-impostos-label">Simples Nacional · Anexo I · Papelaria</span>
-                <span className="calc-taxa-help">?</span>
-              </div>
-            </div>
+            <SliderGroup label="Frete Absorvido" value={frete} display={fmt(frete)} min={0} max={30} step={0.1} onChange={setFrete} />
             <div className="calc-impostos-block">
               <SliderGroup
                 label="Taxa de Recebimento"
                 value={recebimento}
-                display={recebimento + '%'}
+                display={`${recebimento}% · ${fmt(bd.recebimentoVal)}`}
                 min={0}
                 max={10}
-                step={0.5}
+                step={0.1}
                 onChange={setRecebimento}
               />
               <div className="calc-impostos-tooltip" data-tooltip={RECEBIMENTO_TOOLTIP}>
@@ -155,7 +130,7 @@ export function MLPriceCalculator({ custo }) {
             { label: `Ads (${ads}%)`, value: fmt(bd.adsVal) },
             { label: 'Taxa Fixa', value: fmt(taxaEfetiva) },
             { label: 'Frete Absorvido', value: fmt(frete) },
-            { label: `Impostos (${impostos}%)`, value: fmt(bd.impostosVal), className: 'calc-bd-impostos' },
+            { label: `Impostos (${IMPOSTOS}%)`, value: fmt(bd.impostosVal), className: 'calc-bd-impostos' },
             { label: `Recebimento (${recebimento}%)`, value: fmt(bd.recebimentoVal), className: 'calc-bd-impostos' },
             { label: 'Total Descontos', value: fmt(bd.descontos), className: 'calc-bd-total' },
             { label: 'Lucro Líquido', value: fmt(liquido), className: 'calc-bd-lucro' },

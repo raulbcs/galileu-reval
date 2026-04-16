@@ -41,11 +41,11 @@ export function HomePage({ onSelectProduto }) {
     if (!minChars || !todosProdutos) return []
     const q = query.trim().toLowerCase()
     if (searchType === 'nome') {
-      return todosProdutos.filter(
-        (p) =>
-          p.nome?.toLowerCase().includes(q) ||
-          p.descricao?.toLowerCase().includes(q)
-      )
+      const words = q.split(/\s+/).filter(Boolean)
+      return todosProdutos.filter((p) => {
+        const texto = `${p.nome ?? ''} ${p.descricao ?? ''}`.toLowerCase()
+        return words.every((w) => texto.includes(w))
+      })
     }
     if (searchType === 'sku') {
       const qu = q.toUpperCase()

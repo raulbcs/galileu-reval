@@ -1,8 +1,21 @@
-export function SliderGroup({ label, value, display, min, max, step, onChange }) {
+export function SliderGroup({ label, value, display, min, max, step, onChange, enabled, onToggle }) {
+  const isToggleable = onToggle !== undefined
+  const isEnabled = isToggleable ? enabled : true
+
   return (
-    <label className="calc-slider-group">
+    <label className={'calc-slider-group' + (!isEnabled ? ' disabled' : '')}>
       <div className="calc-slider-head">
-        <span>{label}</span>
+        <span className="calc-slider-label">
+          {isToggleable && (
+            <input
+              type="checkbox"
+              className="calc-toggle-check"
+              checked={isEnabled}
+              onChange={e => onToggle(e.target.checked)}
+            />
+          )}
+          {label}
+        </span>
         <span className="calc-val">{display}</span>
       </div>
       <input
@@ -13,6 +26,7 @@ export function SliderGroup({ label, value, display, min, max, step, onChange })
         step={step}
         value={value}
         onChange={e => onChange(+e.target.value)}
+        disabled={!isEnabled}
       />
     </label>
   )
@@ -61,6 +75,99 @@ export function LucroInput({ value, onChange, custo }) {
           />
         </div>
       </div>
+    </div>
+  )
+}
+
+export function ComissaoInput({ pct, rs, onPctChange, onRsChange, preco, enabled, onToggle }) {
+  const isToggleable = onToggle !== undefined
+  const isEnabled = isToggleable ? enabled : true
+
+  return (
+    <div className={'calc-input-group' + (!isEnabled ? ' disabled' : '')}>
+      <div className="calc-slider-head">
+        <span className="calc-slider-label">
+          {isToggleable && (
+            <input
+              type="checkbox"
+              className="calc-toggle-check"
+              checked={isEnabled}
+              onChange={e => onToggle(e.target.checked)}
+            />
+          )}
+          Comissão
+        </span>
+      </div>
+      <div className="calc-lucro-fields">
+        <div className="calc-input-wrap">
+          <span className="calc-input-prefix">%</span>
+          <input
+            type="number"
+            className="calc-input"
+            min="0"
+            max="100"
+            step="0.1"
+            value={pct || ''}
+            placeholder="0"
+            onChange={e => onPctChange(e.target.value === '' ? 0 : Math.max(0, +e.target.value || 0))}
+            disabled={!isEnabled}
+          />
+        </div>
+        <div className="calc-input-wrap">
+          <span className="calc-input-prefix">R$</span>
+          <input
+            type="number"
+            className="calc-input"
+            min="0"
+            step="0.01"
+            value={rs || ''}
+            placeholder="0"
+            onChange={e => onRsChange(e.target.value === '' ? 0 : Math.max(0, +e.target.value || 0))}
+            disabled={!isEnabled}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function TaxaFixaInput({ value, onChange, enabled, onToggle, info }) {
+  const isToggleable = onToggle !== undefined
+  const isEnabled = isToggleable ? enabled : true
+
+  return (
+    <div className={'calc-input-group' + (!isEnabled ? ' disabled' : '')}>
+      <div className="calc-slider-head">
+        <span className="calc-slider-label">
+          {isToggleable && (
+            <input
+              type="checkbox"
+              className="calc-toggle-check"
+              checked={isEnabled}
+              onChange={e => onToggle(e.target.checked)}
+            />
+          )}
+          Taxa Fixa
+        </span>
+      </div>
+      <div className="calc-lucro-fields">
+        <div className="calc-input-wrap">
+          <span className="calc-input-prefix">R$</span>
+          <input
+            type="number"
+            className="calc-input"
+            min="0"
+            step="0.01"
+            value={value || ''}
+            placeholder="0"
+            onChange={e => onChange(e.target.value === '' ? 0 : Math.max(0, +e.target.value || 0))}
+            disabled={!isEnabled}
+          />
+        </div>
+      </div>
+      {isEnabled && info && (
+        <div className="calc-taxa-info">{info}</div>
+      )}
     </div>
   )
 }

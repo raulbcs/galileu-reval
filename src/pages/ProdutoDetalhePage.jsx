@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useImagens, useProduto } from '../hooks/useRevalApi'
 import { traduzirEstoque } from '../utils/estoque'
 import { gerarSku } from '../utils/sku'
-import { PriceCalculator } from '../components/PriceCalculator/PriceCalculator'
 
 export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
   const { data: produto, isLoading, error } = useProduto(codigo)
@@ -156,8 +155,6 @@ export function ProdutoDetalhePage({ codigo, onBack, onNavigateTo }) {
           </div>
         </div>
       )}
-
-      <PriceCalculator custo={parseFloat(produto.preco)} />
 
       {lightboxOpen && (
         <div className="lightbox-overlay" onClick={closeLightbox}>

@@ -1,12 +1,19 @@
 import { useImagemCapa } from '../hooks/useRevalApi'
 import { traduzirEstoque } from '../utils/estoque'
 import { gerarSku } from '../utils/sku'
+import { buildUrl } from '../utils/routing'
 
 export function ProdutoCard({ produto, onClick }) {
   const { data: imgUrl, isLoading } = useImagemCapa(produto.codigo)
 
+  function handleClick(e) {
+    if (e.metaKey || e.ctrlKey) return
+    e.preventDefault()
+    onClick?.(produto.codigo)
+  }
+
   return (
-    <div className="produto-card" onClick={() => onClick?.(produto.codigo)} style={onClick ? { cursor: 'pointer' } : {}}>
+    <a className="produto-card" href={buildUrl(null, null, produto.codigo)} onClick={handleClick}>
       <div className="produto-img">
         {isLoading ? (
           <span className="img-placeholder">...</span>
@@ -28,6 +35,6 @@ export function ProdutoCard({ produto, onClick }) {
           <span>Emb: {produto.embalagem}</span>
         </div>
       </div>
-    </div>
+    </a>
   )
 }

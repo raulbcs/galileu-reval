@@ -248,6 +248,8 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
   display: flex;
   flex-direction: column;
   transition: box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
 }
 
 .produto-card:hover { box-shadow: var(--shadow); }
@@ -258,6 +260,14 @@ h3 { font-size: 16px; margin: 0 0 8px; color: var(--text-h); }
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.produto-img a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 100%;
+  max-width: 100%;
 }
 
 .produto-img img {

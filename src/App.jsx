@@ -9,6 +9,7 @@ import { CategoriasPage } from './pages/CategoriasPage'
 import { FornecedoresPage } from './pages/FornecedoresPage'
 import { LicencasPage } from './pages/LicencasPage'
 import { ListasPage } from './pages/ListasPage'
+import { SimuladorPage } from './pages/SimuladorPage'
 
 function App() {
   const initial = readUrl()
@@ -119,6 +120,7 @@ function App() {
         {currentTab === 'fornecedores' && <FornecedoresPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} initialSelected={currentTab === 'fornecedores' ? preSelect : null} onClearPreSelect={() => setPreSelect(null)} />}
         {currentTab === 'licencas' && <LicencasPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} />}
         {currentTab === 'listas' && <ListasPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} initialSelected={currentTab === 'listas' ? preSelect : null} onClearPreSelect={() => setPreSelect(null)} />}
+        {currentTab === 'simulador' && <SimuladorPage />}
       </main>
     </div>
   )

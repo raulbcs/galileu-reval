@@ -1,5 +1,5 @@
 const TABS = [
-  { key: 'home', label: 'Busca' },
+  { key: 'simulador', label: 'Simulador' },
   { key: 'produtos', label: 'Produtos' },
   { key: 'categorias', label: 'Categorias' },
   { key: 'fornecedores', label: 'Fornecedores' },

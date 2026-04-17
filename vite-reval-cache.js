@@ -7,7 +7,18 @@ import { config } from 'dotenv'
 import pino from 'pino'
 import { signSession, verifySession, parseCookies, cachePath } from './src/server/crypto.js'
 
-const log = pino({ transport: { target: 'pino/file', options: { destination: 1 } } })
+function simpleLog() {
+  return {
+    write: (obj) => {
+      const { level, time, msg, ...rest } = typeof obj === 'string' ? JSON.parse(obj) : obj
+      const data = Object.keys(rest).length ? ' ' + JSON.stringify(rest) : ''
+      const ts = new Date().toISOString().slice(11, 19)
+      process.stdout.write(`${ts} ${String(level || '').padEnd(5)} ${msg || ''}${data}\n`)
+    },
+  }
+}
+
+const log = pino(simpleLog())
 
 config()
 

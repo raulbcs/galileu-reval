@@ -10,19 +10,19 @@ const MARKETPLACES = [
 ]
 
 export function SimuladorPage() {
-  const [custo, setCusto] = useState('50')
+  const [custo, setCusto] = useState('50,00')
   const [marketplace, setMarketplace] = useState('ml')
   const [resetKey, setResetKey] = useState(0)
 
-  const custoNum = parseFloat(custo) || 0
+  const custoNum = parseFloat(custo.replace(',', '.')) || 0
 
   function handleCustoChange(e) {
     const v = e.target.value
-    if (v === '' || /^\d*\.?\d{0,2}$/.test(v)) setCusto(v)
+    if (v === '' || /^\d*[,.]?\d{0,2}$/.test(v)) setCusto(v)
   }
 
   function handleReset() {
-    setCusto('50')
+    setCusto('50,00')
     setResetKey(k => k + 1)
   }
 

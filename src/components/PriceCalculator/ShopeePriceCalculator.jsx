@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { calcPreco, breakdown, fmt, shopeeSubsidio } from './priceCalc'
+import { calcPreco, breakdown, fmt, fmtPct, shopeeSubsidio } from './priceCalc'
 import { SliderGroup, LucroInput, ComissaoInput, TaxaFixaInput, Breakdown } from './PriceSlider'
 
 const SHOPEE_MODES = [
@@ -86,7 +86,7 @@ export function ShopeePriceCalculator({ custo }) {
           <div className="calc-sliders">
             <LucroInput value={lucro} onChange={setLucro} custo={custo} />
             <ComissaoInput pct={comissao} rs={comissaoRs} onPctChange={setComissao} onRsChange={handleComissaoRsChange} preco={preco} enabled={comissaoOn} onToggle={setComissaoOn} />
-            <SliderGroup label="Ads" value={ads} display={`${ads}% · ${fmt(bd.adsVal)}`} min={0} max={20} step={0.1} onChange={setAds} enabled={adsOn} onToggle={setAdsOn} />
+            <SliderGroup label="Ads" value={ads} display={`${fmtPct(ads)}% · ${fmt(bd.adsVal)}`} min={0} max={20} step={0.1} onChange={setAds} enabled={adsOn} onToggle={setAdsOn} />
             <TaxaFixaInput value={taxaFixa} onChange={setTaxaFixa} enabled={taxaFixaOn} onToggle={setTaxaFixaOn} />
             <div className="calc-frete-block">
               <SliderGroup label="Frete Absorvido" value={frete} display={fmt(frete)} min={0} max={30} step={0.1} onChange={setFrete} enabled={freteOn} onToggle={setFreteOn} />
@@ -94,7 +94,7 @@ export function ShopeePriceCalculator({ custo }) {
                 Shopee cobre até {fmt(subsidio)} de frete
               </div>
             </div>
-            <SliderGroup label="Impostos" value={impostos} display={`${impostos}% · ${fmt(bd.impostosVal)}`} min={0} max={30} step={0.1} onChange={setImpostos} enabled={impostosOn} onToggle={setImpostosOn} />
+            <SliderGroup label="Impostos" value={impostos} display={`${fmtPct(impostos)}% · ${fmt(bd.impostosVal)}`} min={0} max={30} step={0.1} onChange={setImpostos} enabled={impostosOn} onToggle={setImpostosOn} />
           </div>
           <Breakdown rows={[
             ...(comissaoOn ? [{ label: `Comissão (${comissao}%)`, value: fmt(bd.comissaoVal) }] : []),

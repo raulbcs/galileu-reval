@@ -1,3 +1,13 @@
+import { parseInput, toInputStr } from './priceCalc'
+
+function sanitizeInput(raw) {
+  return raw.replace(/\./g, ',')
+}
+
+function isValidNumber(raw) {
+  return /^$|^\d+$|^\d+,?$|^\d+,\d{0,2}$/.test(raw)
+}
+
 export function SliderGroup({ label, value, display, min, max, step, onChange, enabled, onToggle }) {
   const isToggleable = onToggle !== undefined
   const isEnabled = isToggleable ? enabled : true
@@ -33,16 +43,7 @@ export function SliderGroup({ label, value, display, min, max, step, onChange, e
 }
 
 export function LucroInput({ value, onChange, custo }) {
-  const pct = custo > 0 ? ((value / custo) * 100) : 0
-
-  const handlePctChange = (raw) => {
-    const v = raw === '' ? 0 : Math.max(0, +raw || 0)
-    onChange(custo * v / 100)
-  }
-
-  const handleRsChange = (raw) => {
-    onChange(raw === '' ? 0 : Math.max(0, +raw || 0))
-  }
+  const pct = custo > 0 ? (value / custo) * 100 : 0
 
   return (
     <div className="calc-input-group">
@@ -53,25 +54,32 @@ export function LucroInput({ value, onChange, custo }) {
         <div className="calc-input-wrap">
           <span className="calc-input-prefix">%</span>
           <input
-            type="number"
+            type="text"
+            inputMode="decimal"
             className="calc-input"
-            min="0"
-            step="0.1"
-            value={pct ? pct : ''}
+            value={pct ? pct.toFixed(1).replace('.', ',') : ''}
             placeholder="0"
-            onChange={e => handlePctChange(e.target.value)}
+            onChange={e => {
+              const raw = sanitizeInput(e.target.value)
+              if (!isValidNumber(raw)) return
+              const v = parseInput(raw)
+              onChange(custo * v / 100)
+            }}
           />
         </div>
         <div className="calc-input-wrap">
           <span className="calc-input-prefix">R$</span>
           <input
-            type="number"
+            type="text"
+            inputMode="decimal"
             className="calc-input"
-            min="0"
-            step="0.1"
-            value={value || ''}
-            placeholder="0"
-            onChange={e => handleRsChange(e.target.value)}
+            value={value ? value.toFixed(2).replace('.', ',') : ''}
+            placeholder="0,00"
+            onChange={e => {
+              const raw = sanitizeInput(e.target.value)
+              if (!isValidNumber(raw)) return
+              onChange(parseInput(raw))
+            }}
           />
         </div>
       </div>
@@ -102,27 +110,32 @@ export function ComissaoInput({ pct, rs, onPctChange, onRsChange, preco, enabled
         <div className="calc-input-wrap">
           <span className="calc-input-prefix">%</span>
           <input
-            type="number"
+            type="text"
+            inputMode="decimal"
             className="calc-input"
-            min="0"
-            max="100"
-            step="0.1"
-            value={pct || ''}
+            value={pct ? pct.toFixed(1).replace('.', ',') : ''}
             placeholder="0"
-            onChange={e => onPctChange(e.target.value === '' ? 0 : Math.max(0, +e.target.value || 0))}
+            onChange={e => {
+              const raw = sanitizeInput(e.target.value)
+              if (!isValidNumber(raw)) return
+              onPctChange(parseInput(raw))
+            }}
             disabled={!isEnabled}
           />
         </div>
         <div className="calc-input-wrap">
           <span className="calc-input-prefix">R$</span>
           <input
-            type="number"
+            type="text"
+            inputMode="decimal"
             className="calc-input"
-            min="0"
-            step="0.01"
-            value={rs || ''}
-            placeholder="0"
-            onChange={e => onRsChange(e.target.value === '' ? 0 : Math.max(0, +e.target.value || 0))}
+            value={rs ? rs.toFixed(2).replace('.', ',') : ''}
+            placeholder="0,00"
+            onChange={e => {
+              const raw = sanitizeInput(e.target.value)
+              if (!isValidNumber(raw)) return
+              onRsChange(parseInput(raw))
+            }}
             disabled={!isEnabled}
           />
         </div>
@@ -154,20 +167,21 @@ export function TaxaFixaInput({ value, onChange, enabled, onToggle, info }) {
         <div className="calc-input-wrap">
           <span className="calc-input-prefix">R$</span>
           <input
-            type="number"
+            type="text"
+            inputMode="decimal"
             className="calc-input"
-            min="0"
-            step="0.01"
-            value={value || ''}
-            placeholder="0"
-            onChange={e => onChange(e.target.value === '' ? 0 : Math.max(0, +e.target.value || 0))}
+            value={value ? value.toFixed(2).replace('.', ',') : ''}
+            placeholder="0,00"
+            onChange={e => {
+              const raw = sanitizeInput(e.target.value)
+              if (!isValidNumber(raw)) return
+              onChange(parseInput(raw))
+            }}
             disabled={!isEnabled}
           />
         </div>
       </div>
-      {isEnabled && info && (
-        <div className="calc-taxa-info">{info}</div>
-      )}
+      {isEnabled && info}
     </div>
   )
 }

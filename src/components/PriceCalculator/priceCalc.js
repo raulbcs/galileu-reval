@@ -15,7 +15,22 @@ export function breakdown(preco, comissaoPct, adsPct, taxaFixa, impostosPct, rec
 }
 
 export function fmt(v) {
-  return 'R$ ' + v.toFixed(2)
+  return 'R$ ' + v.toFixed(2).replace('.', ',')
+}
+
+export function fmtPct(v) {
+  return v.toFixed(1).replace('.', ',')
+}
+
+export function parseInput(raw) {
+  if (raw === '' || raw === undefined || raw === null) return 0
+  return parseFloat(String(raw).replace(',', '.')) || 0
+}
+
+export function toInputStr(num) {
+  if (!num) return ''
+  const s = num.toFixed(2)
+  return s.endsWith('.00') ? s.slice(0, -3).replace('.', ',') || '0' : s.replace('.', ',')
 }
 
 export function fmtFaixaML(v) {

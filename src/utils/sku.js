@@ -10,7 +10,7 @@
 const VOGAIS = new Set('AEIOU')
 
 function consoantes(texto, n) {
-  const cons = [...texto.toUpperCase()].filter(c => /[A-Z]/.test(c) && !VOGAIS.has(c))
+  const cons = [...(texto || '').toUpperCase()].filter(c => /[A-Z]/.test(c) && !VOGAIS.has(c))
   return cons.slice(0, n).join('').padEnd(n, 'X')
 }
 

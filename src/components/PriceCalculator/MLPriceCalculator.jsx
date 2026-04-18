@@ -98,13 +98,16 @@ export function MLPriceCalculator({ custo }) {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </a>
       </div>
-      <div className="calc-mode-cards">
+      <div className="calc-mode-section">
+        <span className="calc-mode-label">Tipo de Anúncio</span>
+        <div className="calc-mode-cards">
         {ML_MODES.map(m => (
           <button key={m.key} className={'calc-mc' + (mlMode === m.key ? ' active' : '')} onClick={() => switchMode(m.key)}>
             <span className="calc-mc-label">{m.label}</span>
             <span className="calc-mc-info">{m.comissao}% comissão</span>
           </button>
         ))}
+      </div>
       </div>
       {preco ? (
         <>

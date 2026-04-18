@@ -55,10 +55,10 @@ describe('exportToXlsx', () => {
     expect(json).toHaveLength(1)
 
     const row = json[0]
+    expect(row['Fornecedor']).toBe('Reval')
     expect(row['Codigo']).toBe('088590')
     expect(row['Nome']).toBe('ABAFADOR VIP PRETO')
     expect(row['Marca']).toBe('VIP')
-    expect(row['SKU Galileu']).toBe('BFDR-VPPX-BFDR-001')
     expect(row['Preco']).toBe(25.9)
     expect(row['NCM']).toBe('39269090')
   })

@@ -4,8 +4,8 @@ import { renderWithProviders } from '../test/render'
 import { ProdutoCard } from './ProdutoCard'
 import { mockProduto } from '../test/fixtures'
 
-vi.mock('../api/imageCache', () => ({
-  fetchAndCacheImage: vi.fn().mockResolvedValue(null),
+vi.mock('../hooks/useRevalApi', () => ({
+  useImagemCapa: vi.fn().mockReturnValue({ data: null, isLoading: false }),
 }))
 
 describe('ProdutoCard', () => {
@@ -24,23 +24,18 @@ describe('ProdutoCard', () => {
     expect(screen.getByText(/100 a 250 un/)).toBeInTheDocument()
   })
 
-  it('chama onClick com codigo ao clicar', async () => {
+  it('chama onClick com codigo e supplier ao clicar', async () => {
     const onClick = vi.fn()
-    renderWithProviders(<ProdutoCard produto={mockProduto} onClick={onClick} />)
+    renderWithProviders(<ProdutoCard produto={{ ...mockProduto, supplier: 'reval' }} onClick={onClick} />)
 
     fireEvent.click(screen.getByText('ABAFADOR VIP PRETO'))
-    expect(onClick).toHaveBeenCalledWith('088590')
+    expect(onClick).toHaveBeenCalledWith('088590', 'reval')
   })
 
-  it('não tem cursor pointer sem onClick', () => {
-    const { container } = renderWithProviders(<ProdutoCard produto={mockProduto} />)
+  it('renderiza como link clicavel', () => {
+    const { container } = renderWithProviders(<ProdutoCard produto={{ ...mockProduto, supplier: 'reval' }} onClick={() => {}} />)
     const card = container.querySelector('.produto-card')
-    expect(card.style.cursor).toBe('')
-  })
-
-  it('tem cursor pointer com onClick', () => {
-    const { container } = renderWithProviders(<ProdutoCard produto={mockProduto} onClick={() => {}} />)
-    const card = container.querySelector('.produto-card')
-    expect(card.style.cursor).toBe('pointer')
+    expect(card.tagName).toBe('A')
+    expect(card.getAttribute('href')).toBe('/produto/reval/088590')
   })
 })

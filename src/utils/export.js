@@ -1,13 +1,12 @@
 import * as XLSX from 'xlsx'
-import { gerarSku } from './sku'
 
 const COLUNAS = [
+  { header: 'Fornecedor', key: '_supplier' },
   { header: 'Codigo', key: 'codigo' },
   { header: 'Codigo de Barras', key: 'codigoBarras' },
   { header: 'Nome', key: 'nome' },
   { header: 'Descricao', key: 'descricao' },
   { header: 'Marca', key: 'marca' },
-  { header: 'SKU Galileu', key: '_sku' },
   { header: 'Preco', key: 'preco' },
   { header: 'Estoque', key: 'estoque' },
   { header: 'Embalagem', key: 'embalagem' },
@@ -31,8 +30,8 @@ export function exportToXlsx(produtos) {
   const rows = produtos.map((p) => {
     const row = {}
     for (const col of COLUNAS) {
-      row[col.header] = col.key === '_sku'
-        ? gerarSku(p.nome, p.marca, p.descricao, p.codigo)
+      row[col.header] = col.key === '_supplier'
+        ? (p.supplier === 'ideal' ? 'Atacado Ideal' : 'Reval')
         : (p[col.key] ?? '')
     }
     return row

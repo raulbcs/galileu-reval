@@ -1,57 +1,41 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useIsFetching, useQueryClient } from '@tanstack/react-query'
-import { login, checkAuth, clearServerCache } from './api/client'
+import { useIsFetching } from '@tanstack/react-query'
+import { login, checkAuth } from './api/revalClient'
 import { TABS, buildUrl, readUrl } from './utils/routing'
 import { HomePage } from './pages/HomePage'
 import { ProdutosPage } from './pages/ProdutosPage'
 import { ProdutoDetalhePage } from './pages/ProdutoDetalhePage'
-import { CategoriasPage } from './pages/CategoriasPage'
-import { FornecedoresPage } from './pages/FornecedoresPage'
-import { LicencasPage } from './pages/LicencasPage'
-import { ListasPage } from './pages/ListasPage'
 import { SimuladorPage } from './pages/SimuladorPage'
 
 function App() {
   const initial = readUrl()
   const [activeTab, setActiveTab] = useState(initial.tab || 'home')
   const [selectedProduto, setSelectedProduto] = useState(initial.produto)
-  const [preSelect, setPreSelect] = useState(initial.filter)
+  const [selectedSupplier, setSelectedSupplier] = useState(initial.supplier || 'reval')
   const [authStatus, setAuthStatus] = useState('pending')
-  const queryClient = useQueryClient()
   const isFetching = useIsFetching()
 
-  const navigate = useCallback((tab, filter, produto, replace = false) => {
+  const navigate = useCallback((tab, filter, produto, supplier, replace = false) => {
     setSelectedProduto(produto || null)
+    setSelectedSupplier(produto ? (supplier || 'reval') : null)
     setActiveTab(produto ? null : tab || 'home')
-    setPreSelect(filter || null)
-    const url = buildUrl(tab, filter, produto)
+    const url = buildUrl(tab, filter, produto, supplier)
     replace ? history.replaceState(null, '', url) : history.pushState(null, '', url)
   }, [])
 
   useEffect(() => {
     function onPopState() {
-      const { tab, filter, produto } = readUrl()
+      const { tab, filter, produto, supplier } = readUrl()
       setSelectedProduto(produto)
+      setSelectedSupplier(produto ? (supplier || 'reval') : null)
       setActiveTab(produto ? 'home' : tab || 'home')
-      setPreSelect(filter)
     }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
-  async function handleClearCache() {
-    if (!window.confirm('Limpar todo o cache do servidor? Os dados serao buscados novamente da Reval.')) return
-    await clearServerCache()
-    queryClient.clear()
-    alert('Cache limpo! Os dados serao atualizados automaticamente.')
-  }
-
-  function handleSelectProduto(codigo) {
-    navigate(null, null, codigo)
-  }
-
-  function handleNavigateTo(tab, filter) {
-    navigate(tab, filter)
+  function handleSelectProduto(codigo, supplier) {
+    navigate(null, null, codigo, supplier)
   }
 
   function handleBackFromDetalhe() {
@@ -84,10 +68,9 @@ function App() {
         {isFetching > 0 && <div className="loading-bar" />}
         <header className="app-header">
           <h1 className="app-title" onClick={() => navigate('home')}>Papelaria Galileu</h1>
-          <button className="btn-clear-cache" onClick={handleClearCache}>Limpar cache</button>
         </header>
         <main className="app-content">
-          <ProdutoDetalhePage codigo={selectedProduto} onBack={handleBackFromDetalhe} onNavigateTo={handleNavigateTo} />
+          <ProdutoDetalhePage codigo={selectedProduto} supplier={selectedSupplier} onBack={handleBackFromDetalhe} />
         </main>
       </div>
     )
@@ -110,16 +93,11 @@ function App() {
             </button>
           ))}
         </nav>
-        <button className="btn-clear-cache" onClick={handleClearCache}>Limpar cache</button>
       </header>
 
       <main className="app-content">
-        {currentTab === 'home' && <HomePage onSelectProduto={handleSelectProduto} />}
+        {currentTab === 'home' && <HomePage onNavigate={(tab) => navigate(tab)} />}
         {currentTab === 'produtos' && <ProdutosPage onSelectProduto={handleSelectProduto} />}
-        {currentTab === 'categorias' && <CategoriasPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} />}
-        {currentTab === 'fornecedores' && <FornecedoresPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} initialSelected={currentTab === 'fornecedores' ? preSelect : null} onClearPreSelect={() => setPreSelect(null)} />}
-        {currentTab === 'licencas' && <LicencasPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} />}
-        {currentTab === 'listas' && <ListasPage onSelectProduto={handleSelectProduto} onNavigateTo={handleNavigateTo} initialSelected={currentTab === 'listas' ? preSelect : null} onClearPreSelect={() => setPreSelect(null)} />}
         {currentTab === 'simulador' && <SimuladorPage />}
       </main>
     </div>

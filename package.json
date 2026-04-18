@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "NODE_ENV=production vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "import-reval": "node scripts/import-reval.js",
+    "import-ideal": "node scripts/import-ideal.js"
   },
   "dependencies": {
     "@sentry/node": "^10.48.0",
@@ -16,6 +18,7 @@
     "@sentry/vite-plugin": "^5.2.0",
     "@tanstack/react-query": "^5.96.1",
     "axios": "^1.14.0",
+    "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.0",
     "pino": "^10.3.1",
     "react": "^19.2.4",

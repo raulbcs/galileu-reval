@@ -1,61 +1,78 @@
 # Galileu
 
-Catálogo de produtos da Reval através da API Reval, para a Papelaria Galileu.
+Catálogo de produtos multi-fornecedor para a Papelaria Galileu. Integra dados da **Reval** (API) e **Atacado Ideal** (SQLite importado) com busca unificada.
 
-## Como funciona
+## Arquitetura
 
-O app é um **proxy com cache em disco** — todas as chamadas passam pelo servidor Vite, que cacheia as respostas em `cache/`:
+- **Server-side**: Plugin Vite (`server-plugin.js`) expõe REST API com SQLite (`db/catalogo.db`), cache de imagens, autenticação e proxy pra API Reval
+- **Client-side**: React SPA com React Query, busca paginada server-side, URLs amigáveis
 
-- **API**: cache de 12h (produtos, categorias, fornecedores, licenças)
-- **Imagens**: cache de 1 semana no servidor + cache do browser (30 dias)
-- **Token Reval**: cacheado até expirar, não é deletado no clear
-- O cache é preenchido automaticamente na primeira request (miss) e serve do disco nas seguintes (hit)
-- O botão "Limpar cache" limpa `cache/api/` e re-cacheia os produtos automaticamente (imagens não são limpas)
+### Dados
 
-## Autenticação
+| Fornecedor | Origem | Importação |
+|---|---|---|
+| Reval | API (`api.reval.net`) | `npm run import-reval` |
+| Atacado Ideal | SQLite externo | `npm run import-ideal` |
 
-O app tem uma tela de login com senha. A senha é validada server-side e nunca chega ao código do front.
+Os dois fornecedores compartilham a mesma tabela `produtos` no SQLite, diferenciados pela coluna `supplier`. Produtos duplicados (mesmo EAN nos dois) não são mesclados — cada um aparece como card separado com badge de fornecedor.
 
-- Sessão via cookie httpOnly assinado com HMAC, válida por 24h
-- Quando a sessão expira, o app volta automaticamente pra tela de login
+### REST API
+
+| Endpoint | Descrição |
+|---|---|
+| `GET /api/produtos?q=&supplier=&page=&pageSize=` | Busca paginada |
+| `GET /api/produtos/:supplier/:codigo` | Detalhe do produto |
+| `GET /api/counts` | Contadores por fornecedor |
+| `POST /api/import/reval` | Importa produtos da Reval |
+| `POST /api/import/ideal` | Importa produtos da Ideal |
+| `GET /cached-images/:codigo` | Imagem da Reval (proxy com cache) |
+| `GET /cached-api/*` | Proxy cacheado pra API Reval (categorias, etc.) |
+
+Busca suporta prefixo: `reval:termo` ou `ideal:termo` filtra por fornecedor direto na query.
+
+### Cache
+
+- **Imagens Reval**: cache em disco (`cache/images/`) com TTL de 1 semana + header `Cache-Control` pro navegador (30 dias)
+- **Imagens Ideal**: servidas por CDN externa, cache natural do navegador
+- **API Reval** (categorias etc.): cache em disco com TTL de 12h
+- **Token Reval**: cacheado até expirar
 
 ## URLs
 
-O estado da aplicação é refletido na URL:
-
-- `/` — Busca de produtos
-- `/fornecedores` — Lista de fornecedores
-- `/fornecedores/Marca` — Produtos de um fornecedor
-- `/listas` — Lista de listas
-- `/listas/D%20-%20ESPORTES` — Produtos de uma lista
-- `/produto/088590` — Detalhe do produto
+- `/` — Home com busca
+- `/produtos` — Catálogo paginado
+- `/simulador` — Simulador de preços
+- `/produto/:supplier/:codigo` — Detalhe do produto
 
 ## Setup
 
-### Desenvolvimento
-
 ```bash
 cp .env.example .env
-# Preencha .env com suas credenciais Reval e senha do app
+# Preencha .env com credenciais Reval, senha do app e Sentry DSN (opcional)
 npm install
+
+# Importar produtos
+npm run import-reval
+npm run import-ideal
+
 npm run dev
 ```
 
 ### Produção
 
 ```bash
-cp .env.example .env
-# Preencha .env com suas credenciais Reval, senha do app e Sentry DSN
-npm install
-
-# Source maps legíveis no Sentry (opcional, gera .env.sentry-build-plugin)
-npx @sentry/wizard@latest -i sourcemaps --saas --org rb-software-c9 --project galileu-reval
-
 npm run build    # minifica JS/CSS para dist/
-npm run preview  # serve dist/ com proxy, cache e auth
+npm run preview  # serve dist/ com API, cache e auth
+
+# Source maps no Sentry (opcional)
+npx @sentry/wizard@latest -i sourcemaps --saas --org rb-software-c9 --project galileu-reval
 ```
 
 Variáveis `VITE_*` são lidas no build, não no runtime — se mudar o Sentry DSN, rode `npm run build` novamente.
+
+## Autenticação
+
+Tela de login com senha validada server-side. Sessão via cookie httpOnly assinado com HMAC, válida por 24h.
 
 ## Variáveis de ambiente
 
@@ -63,11 +80,12 @@ Variáveis `VITE_*` são lidas no build, não no runtime — se mudar o Sentry D
 |---|---|
 | `REVAL_USER` | Usuário da API Reval (server-side only) |
 | `REVAL_PASS` | Senha da API Reval (server-side only) |
-| `APP_PASSWORD` | Senha de acesso ao app (default: `galileu`) |
+| `APP_PASSWORD` | Senha de acesso ao app (default: `password`) |
 | `VITE_SENTRY_DSN` | DSN do Sentry (opcional, só ativa em produção) |
 
 ## Stack
 
-- React + Vite
-- React Query
-- Plugin Vite customizado (`vite-reval-cache.js`) para autenticação, cache e proxy
+- React 19 + Vite 8
+- TanStack React Query v5
+- better-sqlite3
+- Sentry

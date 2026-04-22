@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { searchProdutos as apiSearch, getProduto as apiGetProduto, getCounts as apiGetCounts, getMarcas as apiGetMarcas, importReval, importIdeal } from '../api/produtosClient'
 
@@ -36,7 +36,6 @@ export function useMarcas() {
 }
 
 export function useImportReval() {
-  const queryClient = useState(undefined)[0]
   return useCallback(async () => {
     const result = await importReval()
     return result

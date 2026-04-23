@@ -59,23 +59,23 @@ export function parseProductsFromHtml(html, slug) {
 }
 
 export async function getSlugs() {
-  const resp = await get(`${BASE_URL}/`)
-  if (!resp) throw new Error('Failed to load homepage')
-  const slugs = getSubcategorySlugs(resp.data)
+  const html = await get(`${BASE_URL}/`)
+  if (!html) throw new Error('Failed to load homepage')
+  const slugs = getSubcategorySlugs(html)
   log(`[collect] Found ${slugs.length} subcategories`)
   return slugs
 }
 
 export async function collectSlug(slug) {
-  const firstResp = await get(`${BASE_URL}/${slug}`)
-  if (!firstResp) return { slug, products: [] }
+  const firstHtml = await get(`${BASE_URL}/${slug}`)
+  if (!firstHtml) return { slug, products: [] }
 
-  const pages = getPaginationInfo(firstResp.data)
-  const products = parseProductsFromHtml(firstResp.data, slug)
+  const pages = getPaginationInfo(firstHtml)
+  const products = parseProductsFromHtml(firstHtml, slug)
 
   for (let p = 2; p <= pages; p++) {
-    const resp = await get(`${BASE_URL}/${slug}?page=${p}&slug=${slug}`)
-    if (resp) products.push(...parseProductsFromHtml(resp.data, slug))
+    const html = await get(`${BASE_URL}/${slug}?page=${p}&slug=${slug}`)
+    if (html) products.push(...parseProductsFromHtml(html, slug))
   }
 
   return { slug, products }

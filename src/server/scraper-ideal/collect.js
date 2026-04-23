@@ -60,7 +60,9 @@ export async function collect() {
   const allProducts = []
   const slugMap = new Map()
 
+  let slugIdx = 0
   for (const slug of slugs) {
+    slugIdx++
     const firstResp = await get(`${BASE_URL}/${slug}`)
     if (!firstResp) continue
 
@@ -81,7 +83,7 @@ export async function collect() {
     }
 
     allProducts.push(...products)
-    console.log(`[collect] ${slug} → ${products.length} products (${pages} pages) | Total: ${allProducts.length}`)
+    console.log(`[collect] ${slugIdx}/${slugs.length} ${slug} → ${products.length} products (${pages} pages) | Total: ${allProducts.length}`)
     await new Promise(r => setTimeout(r, DELAY))
   }
 

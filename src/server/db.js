@@ -8,6 +8,7 @@ let _db = null
 
 export function getDb() {
   if (_db) return _db
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true })
   _db = Database(DB_PATH)
   _db.pragma('journal_mode = WAL')
   _db.pragma('foreign_keys = ON')

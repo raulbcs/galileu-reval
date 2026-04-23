@@ -27,55 +27,72 @@ export function parseProductsFromHtml(html, slug) {
   const products = []
   const seen = new Set()
 
+  // Extract product links
   const linkRe = /href="(https:\/\/www\.atacadoideal\.com\.br\/([a-z0-9-]+)-(\d+)-(\d+))"/g
-  for (const a of html.matchAll(linkRe)) {
-    const code = a[3]
+  for (const m of html.matchAll(linkRe)) {
+    const code = m[3]
     if (seen.has(code)) continue
     seen.add(code)
+    products.push({ codigo: code, url: m[1], slug })
+  }
 
-    let nome = '', marca = '', preco = null
-    const card = html.match(new RegExp(
-      `data-codigo-produto="${code}"[^>]*data-nome="([^"]*)"[^>]*data-marca="([^"]*)"`
-    ))
-    if (card) { nome = card[1]; marca = card[2] }
+  // Extract card data in a single pass (avoids per-product dynamic regex)
+  const cardRe = /data-codigo-produto="(\d+)"[^>]*data-nome="([^"]*)"[^>]*data-marca="([^"]*)"/g
+  const cardMap = new Map()
+  for (const m of html.matchAll(cardRe)) {
+    cardMap.set(m[1], { nome: m[2], marca: m[3] })
+  }
 
-    const precoMatch = html.match(new RegExp(
-      `data-codigo-produto="${code}"[^>]*data-preco="([\\d.]+)"`
-    ))
-    if (precoMatch) preco = parseFloat(precoMatch[1])
+  const precoRe = /data-codigo-produto="(\d+)"[^>]*data-preco="([\d.]+)"/g
+  const precoMap = new Map()
+  for (const m of html.matchAll(precoRe)) {
+    precoMap.set(m[1], parseFloat(m[2]))
+  }
 
-    products.push({ codigo: code, url: a[1], nome, marca, preco, slug })
+  for (const p of products) {
+    const card = cardMap.get(p.codigo)
+    p.nome = card ? card.nome : ''
+    p.marca = card ? card.marca : ''
+    p.preco = precoMap.get(p.codigo) || null
   }
 
   return products
 }
 
-export async function getSlugs() {
+export async function collect() {
   const resp = await get(`${BASE_URL}/`)
   if (!resp) throw new Error('Failed to load homepage')
+
   const slugs = getSubcategorySlugs(resp.data)
   console.log(`[collect] Found ${slugs.length} subcategories`)
-  return slugs
-}
 
-export async function collectSlug(slug) {
-  const firstResp = await get(`${BASE_URL}/${slug}`)
-  if (!firstResp) return []
+  const allProducts = []
 
-  const pages = getPaginationInfo(firstResp.data)
-  const products = parseProductsFromHtml(firstResp.data, slug)
+  for (let i = 0; i < slugs.length; i++) {
+    const slug = slugs[i]
+    const firstResp = await get(`${BASE_URL}/${slug}`)
+    if (!firstResp) continue
 
-  if (pages > 1) {
-    const pageUrls = []
-    for (let p = 2; p <= pages; p++) {
-      pageUrls.push(`${BASE_URL}/${slug}?page=${p}&slug=${slug}`)
+    const pages = getPaginationInfo(firstResp.data)
+    const products = parseProductsFromHtml(firstResp.data, slug)
+
+    if (pages > 1) {
+      const pageUrls = []
+      for (let p = 2; p <= pages; p++) {
+        pageUrls.push(`${BASE_URL}/${slug}?page=${p}&slug=${slug}`)
+      }
+      await new Promise(r => setTimeout(r, DELAY))
+      const pageResults = await fetchAll(pageUrls)
+      for (const r of pageResults) {
+        products.push(...parseProductsFromHtml(r.data, slug))
+      }
     }
+
+    allProducts.push(...products)
+    console.log(`[collect] ${i + 1}/${slugs.length} ${slug} → ${products.length} products (${pages} pages) | Total: ${allProducts.length}`)
     await new Promise(r => setTimeout(r, DELAY))
-    const pageResults = await fetchAll(pageUrls)
-    for (const r of pageResults) {
-      products.push(...parseProductsFromHtml(r.data, slug))
-    }
   }
 
-  return products
+  console.log(`[collect] Complete: ${allProducts.length} products from ${slugs.length} subcategories`)
+  return allProducts
 }

@@ -2,12 +2,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import zlib from 'node:zlib'
 import axios from 'axios'
+import cron from 'node-cron'
 import * as Sentry from '@sentry/node'
 import { config } from 'dotenv'
 import pino from 'pino'
 import { signSession, verifySession, parseCookies, cachePath } from './src/server/crypto.js'
-import { getDb, upsertRevalProdutos, upsertIdealProdutos, searchProdutos, getProduto, getCounts, getMarcas } from './src/server/db.js'
-import Database from 'better-sqlite3'
+import { getDb, searchProdutos, getProduto, getCounts, getMarcas } from './src/server/db.js'
+import { importRevalProducts, importIdealProducts } from './src/server/import.js'
 
 function simpleLog() {
   return {
@@ -114,6 +115,24 @@ export function serverPlugin() {
   // Init DB on startup
   const counts = getCounts()
   log.info({ counts }, 'SQLite DB ready')
+
+  // Register daily cron
+  cron.schedule('0 3 * * *', async () => {
+    log.info('Cron: starting daily import...')
+    try {
+      const revalResult = await importRevalProducts()
+      log.info(revalResult, 'Cron: Reval import done')
+    } catch (err) {
+      log.error({ err: err.message }, 'Cron: Reval import failed')
+    }
+    try {
+      const idealResult = await importIdealProducts()
+      log.info(idealResult, 'Cron: Ideal import done')
+    } catch (err) {
+      log.error({ err: err.message }, 'Cron: Ideal import failed')
+    }
+  })
+  log.info('Cron: daily import scheduled at 03:00')
 
   function setupGzipCacheMiddleware(server) {
       // --- Gzip responses ---
@@ -269,44 +288,6 @@ export function serverPlugin() {
       // --- REST API: Marcas ---
       server.middlewares.use('/api/marcas', (req, res) => {
         jsonResponse(res, getMarcas())
-      })
-
-      // --- REST API: Import Reval ---
-      server.middlewares.use('/api/import/reval', async (req, res, next) => {
-        if (req.method !== 'POST') return next()
-        try {
-          log.info('Importing Reval products...')
-          const allProductsUrl = `/api/produto/get-all-tabela?usuario=${REVAL_USER}`
-          const { data } = await apiGet(`${REVAL_BASE_URL}${allProductsUrl}`, { timeout: 240000 })
-          const count = upsertRevalProdutos(data)
-          log.info({ count }, 'Reval products imported')
-          jsonResponse(res, { ok: true, supplier: 'reval', count })
-        } catch (err) {
-          log.error({ err: err.message }, 'Reval import failed')
-          jsonResponse(res, { error: err.message }, 500)
-        }
-      })
-
-      // --- REST API: Import Ideal ---
-      server.middlewares.use('/api/import/ideal', (req, res, next) => {
-        if (req.method !== 'POST') return next()
-        const IDEAL_DB_PATH = path.resolve('../disassembly-atacado-ideal-apk/output/catalogo.db')
-        if (!fs.existsSync(IDEAL_DB_PATH)) {
-          jsonResponse(res, { error: 'Ideal DB not found' }, 404)
-          return
-        }
-        try {
-          log.info('Importing Ideal products...')
-          const srcDb = new Database(IDEAL_DB_PATH, { readonly: true })
-          const produtos = srcDb.prepare('SELECT * FROM produtos').all()
-          srcDb.close()
-          const count = upsertIdealProdutos(produtos)
-          log.info({ count }, 'Ideal products imported')
-          jsonResponse(res, { ok: true, supplier: 'ideal', count })
-        } catch (err) {
-          log.error({ err: err.message }, 'Ideal import failed')
-          jsonResponse(res, { error: err.message }, 500)
-        }
       })
 
       // --- REST API: Clear cache ---

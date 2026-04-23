@@ -65,18 +65,32 @@ export async function collect() {
   const slugs = getSubcategorySlugs(html)
   log(`[collect] Found ${slugs.length} subcategories`)
 
-  // Collect first page of all subcategories in parallel
-  const firstPages = await fetchAll(slugs.map(s => `${BASE_URL}/${s}`))
+  const SLUG_BATCH = 100
+  const allProducts = []
+  let extraUrlCount = 0
+
+  // Phase 1: fetch first pages in batches, parse products, collect extra page URLs
   const slugData = []
-  for (const { url, data } of firstPages) {
-    const slug = slugs.find(s => url.endsWith(s))
-    if (!slug) continue
-    const pages = getPaginationInfo(data)
-    const products = parseProductsFromHtml(data, slug)
-    slugData.push({ slug, pages, products })
+  for (let i = 0; i < slugs.length; i += SLUG_BATCH) {
+    const batch = slugs.slice(i, i + SLUG_BATCH)
+    const urls = batch.map(s => `${BASE_URL}/${s}`)
+    const pages = await fetchAll(urls)
+
+    for (const { url, data } of pages) {
+      const slug = batch.find(s => url.endsWith(s))
+      if (!slug) continue
+      const pageCount = getPaginationInfo(data)
+      const products = parseProductsFromHtml(data, slug)
+      slugData.push({ slug, pages: pageCount, products })
+
+      const extras = pageCount > 1 ? pageCount - 1 : 0
+      extraUrlCount += extras
+    }
+
+    log(`[collect] Phase 1: ${Math.min(i + SLUG_BATCH, slugs.length)}/${slugs.length} subcategories fetched`)
   }
 
-  // Collect extra pages for all subcategories in parallel
+  // Phase 2: fetch all extra pages in one big parallel batch (they're already paginated URLs)
   const extraUrls = []
   const extraSlugMap = new Map()
   for (const { slug, pages } of slugData) {
@@ -88,21 +102,22 @@ export async function collect() {
   }
 
   if (extraUrls.length) {
-    const extraPages = await fetchAll(extraUrls)
-    const productsBySlug = new Map()
-    for (const { url, data } of extraPages) {
-      const slug = extraSlugMap.get(url)
-      const prods = parseProductsFromHtml(data, slug)
-      if (!productsBySlug.has(slug)) productsBySlug.set(slug, [])
-      productsBySlug.get(slug).push(...prods)
-    }
-    for (const sd of slugData) {
-      const extra = productsBySlug.get(sd.slug)
-      if (extra) sd.products.push(...extra)
+    log(`[collect] Phase 2: fetching ${extraUrls.length} extra pages...`)
+    const EXTRA_BATCH = 200
+    for (let i = 0; i < extraUrls.length; i += EXTRA_BATCH) {
+      const batch = extraUrls.slice(i, i + EXTRA_BATCH)
+      const pages = await fetchAll(batch)
+
+      for (const { url, data } of pages) {
+        const slug = extraSlugMap.get(url)
+        const sd = slugData.find(s => s.slug === slug)
+        if (sd) sd.products.push(...parseProductsFromHtml(data, slug))
+      }
+
+      log(`[collect] Phase 2: ${Math.min(i + EXTRA_BATCH, extraUrls.length)}/${extraUrls.length} extra pages fetched`)
     }
   }
 
-  const allProducts = []
   for (const { slug, products } of slugData) {
     allProducts.push(...products)
     if (products.length) log(`[collect] ${slug} → ${products.length} products`)

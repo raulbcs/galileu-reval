@@ -59,7 +59,24 @@ function initSchema(db) {
     CREATE INDEX IF NOT EXISTS idx_produtos_marca ON produtos(marca);
     CREATE INDEX IF NOT EXISTS idx_produtos_ean ON produtos(ean);
     CREATE INDEX IF NOT EXISTS idx_produtos_preco ON produtos(preco);
+
+    CREATE TABLE IF NOT EXISTS product_status_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      produto_id TEXT NOT NULL,
+      supplier TEXT NOT NULL,
+      evento TEXT NOT NULL,
+      criado_em TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_status_log_produto ON product_status_log(produto_id);
   `)
+
+  // Migrate existing DB
+  const cols = db.prepare("PRAGMA table_info(produtos)").all().map(c => c.name)
+  if (!cols.includes('deleted_at')) {
+    db.exec('ALTER TABLE produtos ADD COLUMN deleted_at TEXT')
+  }
+  db.exec('CREATE INDEX IF NOT EXISTS idx_produtos_deleted ON produtos(deleted_at)')
 }
 
 export function upsertRevalProdutos(produtos) {
@@ -209,6 +226,8 @@ export function searchProdutos({ query, supplier, marca, precoMin, precoMax, pag
     effectiveQuery = match[2].trim()
   }
 
+  where.push('deleted_at IS NULL')
+
   if (supplier && supplier !== 'todos') {
     where.push('supplier = @supplier')
     params.supplier = supplier
@@ -273,4 +292,39 @@ export function getCounts() {
 export function getMarcas() {
   const db = getDb()
   return db.prepare("SELECT DISTINCT marca FROM produtos WHERE marca IS NOT NULL AND marca != '' ORDER BY marca").all().map(r => r.marca)
+}
+
+export function softDeleteMissing(supplier, activeCodes) {
+  if (!activeCodes.length) return { disappeared: 0, reappeared: 0 }
+  const db = getDb()
+  const now = new Date().toISOString()
+  const placeholders = activeCodes.map(() => '?').join(',')
+
+  const disappeared = db.prepare(
+    `SELECT codigo FROM produtos WHERE supplier = ? AND codigo NOT IN (${placeholders}) AND deleted_at IS NULL`
+  ).all(supplier, ...activeCodes)
+
+  const reappeared = db.prepare(
+    `SELECT codigo FROM produtos WHERE supplier = ? AND codigo IN (${placeholders}) AND deleted_at IS NOT NULL`
+  ).all(supplier, ...activeCodes)
+
+  if (disappeared.length || reappeared.length) {
+    const tx = db.transaction(() => {
+      const logStmt = db.prepare('INSERT INTO product_status_log (produto_id, supplier, evento, criado_em) VALUES (?, ?, ?, ?)')
+      const deleteStmt = db.prepare('UPDATE produtos SET deleted_at = ? WHERE supplier = ? AND codigo = ?')
+      const restoreStmt = db.prepare('UPDATE produtos SET deleted_at = NULL WHERE supplier = ? AND codigo = ?')
+
+      for (const { codigo } of disappeared) {
+        deleteStmt.run(now, supplier, codigo)
+        logStmt.run(`${supplier}:${codigo}`, supplier, 'disappeared', now)
+      }
+      for (const { codigo } of reappeared) {
+        restoreStmt.run(supplier, codigo)
+        logStmt.run(`${supplier}:${codigo}`, supplier, 'reappeared', now)
+      }
+    })
+    tx()
+  }
+
+  return { disappeared: disappeared.length, reappeared: reappeared.length }
 }

@@ -1,5 +1,5 @@
 import { BASE_URL, DELAY, CONCURRENCY } from './config.js'
-import { get, fetchAll } from './fetch.js'
+import { get } from './fetch.js'
 import { log } from './log.js'
 
 const IGNORE_PREFIXES = [
@@ -65,62 +65,23 @@ export async function collect() {
   const slugs = getSubcategorySlugs(html)
   log(`[collect] Found ${slugs.length} subcategories`)
 
-  const SLUG_BATCH = 100
   const allProducts = []
-  let extraUrlCount = 0
 
-  // Phase 1: fetch first pages in batches, parse products, collect extra page URLs
-  const slugData = []
-  for (let i = 0; i < slugs.length; i += SLUG_BATCH) {
-    const batch = slugs.slice(i, i + SLUG_BATCH)
-    const urls = batch.map(s => `${BASE_URL}/${s}`)
-    const pages = await fetchAll(urls)
+  for (let i = 0; i < slugs.length; i++) {
+    const slug = slugs[i]
+    const firstHtml = await get(`${BASE_URL}/${slug}`)
+    if (!firstHtml) continue
 
-    for (const { url, data } of pages) {
-      const slug = batch.find(s => url.endsWith(s))
-      if (!slug) continue
-      const pageCount = getPaginationInfo(data)
-      const products = parseProductsFromHtml(data, slug)
-      slugData.push({ slug, pages: pageCount, products })
+    const pages = getPaginationInfo(firstHtml)
+    const products = parseProductsFromHtml(firstHtml, slug)
 
-      const extras = pageCount > 1 ? pageCount - 1 : 0
-      extraUrlCount += extras
-    }
-
-    log(`[collect] Phase 1: ${Math.min(i + SLUG_BATCH, slugs.length)}/${slugs.length} subcategories fetched`)
-  }
-
-  // Phase 2: fetch all extra pages in one big parallel batch (they're already paginated URLs)
-  const extraUrls = []
-  const extraSlugMap = new Map()
-  for (const { slug, pages } of slugData) {
     for (let p = 2; p <= pages; p++) {
-      const url = `${BASE_URL}/${slug}?page=${p}&slug=${slug}`
-      extraUrls.push(url)
-      extraSlugMap.set(url, slug)
+      const pageHtml = await get(`${BASE_URL}/${slug}?page=${p}&slug=${slug}`)
+      if (pageHtml) products.push(...parseProductsFromHtml(pageHtml, slug))
     }
-  }
 
-  if (extraUrls.length) {
-    log(`[collect] Phase 2: fetching ${extraUrls.length} extra pages...`)
-    const EXTRA_BATCH = 200
-    for (let i = 0; i < extraUrls.length; i += EXTRA_BATCH) {
-      const batch = extraUrls.slice(i, i + EXTRA_BATCH)
-      const pages = await fetchAll(batch)
-
-      for (const { url, data } of pages) {
-        const slug = extraSlugMap.get(url)
-        const sd = slugData.find(s => s.slug === slug)
-        if (sd) sd.products.push(...parseProductsFromHtml(data, slug))
-      }
-
-      log(`[collect] Phase 2: ${Math.min(i + EXTRA_BATCH, extraUrls.length)}/${extraUrls.length} extra pages fetched`)
-    }
-  }
-
-  for (const { slug, products } of slugData) {
     allProducts.push(...products)
-    if (products.length) log(`[collect] ${slug} → ${products.length} products`)
+    log(`[collect] ${i + 1}/${slugs.length} ${slug} → ${products.length} products (${pages} pages) | Total: ${allProducts.length}`)
   }
 
   log(`[collect] Complete: ${allProducts.length} products from ${slugs.length} subcategories`)

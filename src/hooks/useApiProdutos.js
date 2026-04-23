@@ -1,6 +1,5 @@
-import { useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { searchProdutos as apiSearch, getProduto as apiGetProduto, getCounts as apiGetCounts, getMarcas as apiGetMarcas, importReval, importIdeal } from '../api/produtosClient'
+import { searchProdutos as apiSearch, getProduto as apiGetProduto, getCounts as apiGetCounts, getMarcas as apiGetMarcas } from '../api/produtosClient'
 
 export function useSearchProdutos({ query = '', supplier = 'todos', marca = '', precoMin = '', precoMax = '', page = 1, pageSize = 30 } = {}) {
   const minChars = query.length >= 3
@@ -33,18 +32,4 @@ export function useMarcas() {
     queryFn: apiGetMarcas,
     staleTime: 5 * 60 * 1000,
   })
-}
-
-export function useImportReval() {
-  return useCallback(async () => {
-    const result = await importReval()
-    return result
-  }, [])
-}
-
-export function useImportIdeal() {
-  return useCallback(async () => {
-    const result = await importIdeal()
-    return result
-  }, [])
 }

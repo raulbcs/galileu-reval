@@ -40,13 +40,3 @@ export async function getMarcas() {
   const { data } = await api.get('/marcas')
   return data
 }
-
-export async function importReval() {
-  const { data } = await api.post('/import/reval')
-  return data
-}
-
-export async function importIdeal() {
-  const { data } = await api.post('/import/ideal')
-  return data
-}

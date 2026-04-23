@@ -82,6 +82,7 @@ export async function collect() {
 
     allProducts.push(...products)
     log(`[collect] ${i + 1}/${slugs.length} ${slug} → ${products.length} products (${pages} pages) | Total: ${allProducts.length}`)
+    if (global.gc && (i + 1) % 50 === 0) global.gc()
   }
 
   log(`[collect] Complete: ${allProducts.length} products from ${slugs.length} subcategories`)

@@ -13,6 +13,8 @@ dist-ssr
 coverage
 *.local
 cache
+db/
+*.xlsx
 .env
 .env.sentry-build-plugin
 .claude/

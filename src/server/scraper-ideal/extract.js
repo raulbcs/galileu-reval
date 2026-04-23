@@ -1,13 +1,13 @@
 import * as cheerio from 'cheerio'
 import { DELAY, CONCURRENCY } from './config.js'
 import { fetchAll } from './fetch.js'
+import { log } from './log.js'
 
 export function parseProductPage(html, codigo) {
   const data = { codigo, url: '', nome: '', descricao: '', marca: '', categoria: '', ean: '', sku_fabricante: '', ncm: '', embalagem: '', ean_caixa: '', origem: '', altura_cm: '', largura_cm: '', comprimento_cm: '', peso_kg: '', imagem_url: '', preco: null, disponivel: 0 }
 
   const $ = cheerio.load(html)
 
-  // JSON-LD extraction
   $('script[type="application/ld+json"]').each((_, el) => {
     try {
       const ld = JSON.parse($(el).html())
@@ -35,7 +35,6 @@ export function parseProductPage(html, codigo) {
     } catch { /* skip invalid JSON */ }
   })
 
-  // Feature extraction
   function feature(cls) {
     const el = $(`li.product__features--${cls}`)
     if (!el.length) return ''
@@ -68,7 +67,7 @@ export async function extract(products) {
   const BATCH_SIZE = 100
   const extracted = []
 
-  console.log(`[extract] Extracting details for ${products.length} products in batches of ${BATCH_SIZE}...`)
+  log(`[extract] Extracting details for ${products.length} products in batches of ${BATCH_SIZE}...`)
 
   for (let i = 0; i < products.length; i += BATCH_SIZE) {
     const batch = products.slice(i, i + BATCH_SIZE)
@@ -87,9 +86,9 @@ export async function extract(products) {
     }
 
     const done = Math.min(i + BATCH_SIZE, products.length)
-    console.log(`[extract] ${done}/${products.length} extracted`)
+    log(`[extract] ${done}/${products.length} extracted`)
   }
 
-  console.log(`[extract] Complete: ${extracted.length} products extracted`)
+  log(`[extract] Complete: ${extracted.length} products extracted`)
   return extracted
 }

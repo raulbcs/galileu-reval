@@ -88,6 +88,7 @@ export async function extract(products, onBatch) {
 
     totalExtracted += extracted.length
     if (onBatch) onBatch(extracted)
+    if (global.gc) global.gc()
 
     log(`[extract] ${Math.min(i + BATCH_SIZE, products.length)}/${products.length} extracted (total: ${totalExtracted})`)
   }

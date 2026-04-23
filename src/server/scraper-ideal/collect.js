@@ -1,5 +1,5 @@
 import { BASE_URL, DELAY, CONCURRENCY } from './config.js'
-import { get, fetchAll } from './fetch.js'
+import { get } from './fetch.js'
 import { log } from './log.js'
 
 const IGNORE_PREFIXES = [
@@ -58,40 +58,25 @@ export function parseProductsFromHtml(html, slug) {
   return products
 }
 
-export async function collect() {
+export async function getSlugs() {
   const resp = await get(`${BASE_URL}/`)
   if (!resp) throw new Error('Failed to load homepage')
-
   const slugs = getSubcategorySlugs(resp.data)
   log(`[collect] Found ${slugs.length} subcategories`)
+  return slugs
+}
 
-  const allProducts = []
+export async function collectSlug(slug) {
+  const firstResp = await get(`${BASE_URL}/${slug}`)
+  if (!firstResp) return { slug, products: [] }
 
-  for (let i = 0; i < slugs.length; i++) {
-    const slug = slugs[i]
-    const firstResp = await get(`${BASE_URL}/${slug}`)
-    if (!firstResp) continue
+  const pages = getPaginationInfo(firstResp.data)
+  const products = parseProductsFromHtml(firstResp.data, slug)
 
-    const pages = getPaginationInfo(firstResp.data)
-    const products = parseProductsFromHtml(firstResp.data, slug)
-
-    if (pages > 1) {
-      const pageUrls = []
-      for (let p = 2; p <= pages; p++) {
-        pageUrls.push(`${BASE_URL}/${slug}?page=${p}&slug=${slug}`)
-      }
-      await new Promise(r => setTimeout(r, DELAY))
-      const pageResults = await fetchAll(pageUrls)
-      for (const r of pageResults) {
-        products.push(...parseProductsFromHtml(r.data, slug))
-      }
-    }
-
-    allProducts.push(...products)
-    log(`[collect] ${i + 1}/${slugs.length} ${slug} → ${products.length} products (${pages} pages) | Total: ${allProducts.length}`)
-    await new Promise(r => setTimeout(r, DELAY))
+  for (let p = 2; p <= pages; p++) {
+    const resp = await get(`${BASE_URL}/${slug}?page=${p}&slug=${slug}`)
+    if (resp) products.push(...parseProductsFromHtml(resp.data, slug))
   }
 
-  log(`[collect] Complete: ${allProducts.length} products from ${slugs.length} subcategories`)
-  return allProducts
+  return { slug, products }
 }

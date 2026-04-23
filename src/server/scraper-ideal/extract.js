@@ -63,19 +63,20 @@ export function parseProductPage(html, codigo) {
   return data
 }
 
-export async function extract(products) {
+export async function extract(products, onBatch) {
   const BATCH_SIZE = 100
-  const extracted = []
+  let totalExtracted = 0
 
   log(`[extract] Extracting details for ${products.length} products in batches of ${BATCH_SIZE}...`)
 
   for (let i = 0; i < products.length; i += BATCH_SIZE) {
     const batch = products.slice(i, i + BATCH_SIZE)
-    const urls = batch.map(p => p.url)
-    const results = await fetchAll(urls)
+    const urlMap = new Map(batch.map(p => [p.url, p]))
+    const results = await fetchAll(batch.map(p => p.url))
 
+    const extracted = []
     for (const { url, data: html } of results) {
-      const product = batch.find(p => p.url === url)
+      const product = urlMap.get(url)
       if (!product) continue
       const detail = parseProductPage(html, product.codigo)
       detail.url = url
@@ -85,10 +86,12 @@ export async function extract(products) {
       extracted.push(detail)
     }
 
-    const done = Math.min(i + BATCH_SIZE, products.length)
-    log(`[extract] ${done}/${products.length} extracted`)
+    totalExtracted += extracted.length
+    if (onBatch) onBatch(extracted)
+
+    log(`[extract] ${Math.min(i + BATCH_SIZE, products.length)}/${products.length} extracted (total: ${totalExtracted})`)
   }
 
-  log(`[extract] Complete: ${extracted.length} products extracted`)
-  return extracted
+  log(`[extract] Complete: ${totalExtracted} products extracted`)
+  return totalExtracted
 }

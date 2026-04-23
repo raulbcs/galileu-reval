@@ -2,19 +2,19 @@ import { collect } from './collect.js'
 import { extract } from './extract.js'
 import { log } from './log.js'
 
-export async function runScraper() {
+export async function runScraper(onBatch) {
   log('[scraper-ideal] Starting full scrape...')
   const products = await collect()
   if (!products.length) {
     log('[scraper-ideal] No products found')
-    return []
+    return 0
   }
 
-  const extracted = await extract(products)
-  if (!extracted.length) {
+  const totalExtracted = await extract(products, onBatch)
+  if (!totalExtracted) {
     log('[scraper-ideal] No products extracted')
-    return []
+    return 0
   }
 
-  return extracted
+  return totalExtracted
 }

@@ -64,12 +64,20 @@ export async function importRevalProducts() {
 
 export async function importIdealProducts() {
   console.log('[import] Scraping Ideal products...')
-  const data = await runScraper()
-  const valid = data.filter(p => p.nome)
-  const codes = valid.map(p => String(p.codigo))
-  if (valid.length < data.length) console.log(`[import] Ideal: skipped ${data.length - valid.length} products without nome`)
-  const count = upsertIdealProdutos(valid)
-  const { disappeared, reappeared } = softDeleteMissing('ideal', codes)
-  console.log(`[import] Ideal: ${count} upserted, ${disappeared} disappeared, ${reappeared} reappeared`)
-  return { supplier: 'ideal', count, disappeared, reappeared }
+  let totalUpserted = 0
+  let totalSkipped = 0
+  const allCodes = []
+
+  const totalExtracted = await runScraper((products) => {
+    const valid = products.filter(p => p.nome)
+    const skipped = products.length - valid.length
+    if (skipped) totalSkipped += skipped
+    allCodes.push(...valid.map(p => String(p.codigo)))
+    totalUpserted += upsertIdealProdutos(valid)
+  })
+
+  if (totalSkipped) console.log(`[import] Ideal: skipped ${totalSkipped} products without nome`)
+  const { disappeared, reappeared } = softDeleteMissing('ideal', allCodes)
+  console.log(`[import] Ideal: ${totalUpserted} upserted, ${disappeared} disappeared, ${reappeared} reappeared`)
+  return { supplier: 'ideal', count: totalUpserted, disappeared, reappeared }
 }

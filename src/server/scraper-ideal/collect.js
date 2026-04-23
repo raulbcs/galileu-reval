@@ -1,5 +1,5 @@
 import { BASE_URL, DELAY, CONCURRENCY } from './config.js'
-import { get } from './fetch.js'
+import { get, fetchAll } from './fetch.js'
 import { log } from './log.js'
 
 const IGNORE_PREFIXES = [
@@ -58,25 +58,56 @@ export function parseProductsFromHtml(html, slug) {
   return products
 }
 
-export async function getSlugs() {
+export async function collect() {
   const html = await get(`${BASE_URL}/`)
   if (!html) throw new Error('Failed to load homepage')
+
   const slugs = getSubcategorySlugs(html)
   log(`[collect] Found ${slugs.length} subcategories`)
-  return slugs
-}
 
-export async function collectSlug(slug) {
-  const firstHtml = await get(`${BASE_URL}/${slug}`)
-  if (!firstHtml) return { slug, products: [] }
-
-  const pages = getPaginationInfo(firstHtml)
-  const products = parseProductsFromHtml(firstHtml, slug)
-
-  for (let p = 2; p <= pages; p++) {
-    const html = await get(`${BASE_URL}/${slug}?page=${p}&slug=${slug}`)
-    if (html) products.push(...parseProductsFromHtml(html, slug))
+  // Collect first page of all subcategories in parallel
+  const firstPages = await fetchAll(slugs.map(s => `${BASE_URL}/${s}`))
+  const slugData = []
+  for (const { url, data } of firstPages) {
+    const slug = slugs.find(s => url.endsWith(s))
+    if (!slug) continue
+    const pages = getPaginationInfo(data)
+    const products = parseProductsFromHtml(data, slug)
+    slugData.push({ slug, pages, products })
   }
 
-  return { slug, products }
+  // Collect extra pages for all subcategories in parallel
+  const extraUrls = []
+  const extraSlugMap = new Map()
+  for (const { slug, pages } of slugData) {
+    for (let p = 2; p <= pages; p++) {
+      const url = `${BASE_URL}/${slug}?page=${p}&slug=${slug}`
+      extraUrls.push(url)
+      extraSlugMap.set(url, slug)
+    }
+  }
+
+  if (extraUrls.length) {
+    const extraPages = await fetchAll(extraUrls)
+    const productsBySlug = new Map()
+    for (const { url, data } of extraPages) {
+      const slug = extraSlugMap.get(url)
+      const prods = parseProductsFromHtml(data, slug)
+      if (!productsBySlug.has(slug)) productsBySlug.set(slug, [])
+      productsBySlug.get(slug).push(...prods)
+    }
+    for (const sd of slugData) {
+      const extra = productsBySlug.get(sd.slug)
+      if (extra) sd.products.push(...extra)
+    }
+  }
+
+  const allProducts = []
+  for (const { slug, products } of slugData) {
+    allProducts.push(...products)
+    if (products.length) log(`[collect] ${slug} → ${products.length} products`)
+  }
+
+  log(`[collect] Complete: ${allProducts.length} products from ${slugs.length} subcategories`)
+  return allProducts
 }

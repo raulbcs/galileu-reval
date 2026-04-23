@@ -1,4 +1,4 @@
-#!/usr/bin/env node --max-old-space-size=512 --expose-gc
+#!/usr/bin/env node
 import 'dotenv/config'
 import { importIdealProducts } from '../src/server/import.js'
 

@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio'
-import { DELAY, CONCURRENCY } from './config.js'
+import { CONCURRENCY } from './config.js'
 import { fetchAll } from './fetch.js'
 import { log } from './log.js'
 
@@ -64,7 +64,7 @@ export function parseProductPage(html, codigo) {
 }
 
 export async function extract(products, onBatch) {
-  const BATCH_SIZE = 100
+  const BATCH_SIZE = 500
   let totalExtracted = 0
 
   log(`[extract] Extracting details for ${products.length} products in batches of ${BATCH_SIZE}...`)
@@ -88,7 +88,6 @@ export async function extract(products, onBatch) {
 
     totalExtracted += extracted.length
     if (onBatch) onBatch(extracted)
-    if (global.gc) global.gc()
 
     log(`[extract] ${Math.min(i + BATCH_SIZE, products.length)}/${products.length} extracted (total: ${totalExtracted})`)
   }

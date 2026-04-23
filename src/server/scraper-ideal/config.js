@@ -1,6 +1,6 @@
 export const BASE_URL = 'https://www.atacadoideal.com.br'
 export const DELAY = 500
-export const CONCURRENCY = 10
+export const CONCURRENCY = 20
 
 export const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',

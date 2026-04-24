@@ -117,22 +117,22 @@ export function serverPlugin() {
   log.info({ counts }, 'SQLite DB ready')
 
   // Register daily cron
-  cron.schedule('0 3 * * *', async () => {
-    log.info('Cron: starting daily import...')
-    try {
-      const revalResult = await importRevalProducts()
-      log.info(revalResult, 'Cron: Reval import done')
-    } catch (err) {
-      log.error({ err: err.message }, 'Cron: Reval import failed')
-    }
-    try {
-      const idealResult = await importIdealProducts()
-      log.info(idealResult, 'Cron: Ideal import done')
-    } catch (err) {
-      log.error({ err: err.message }, 'Cron: Ideal import failed')
-    }
-  })
-  log.info('Cron: daily import scheduled at 03:00')
+  // cron.schedule('0 3 * * *', async () => {
+  //   log.info('Cron: starting daily import...')
+  //   try {
+  //     const revalResult = await importRevalProducts()
+  //     log.info(revalResult, 'Cron: Reval import done')
+  //   } catch (err) {
+  //     log.error({ err: err.message }, 'Cron: Reval import failed')
+  //   }
+  //   try {
+  //     const idealResult = await importIdealProducts()
+  //     log.info(idealResult, 'Cron: Ideal import done')
+  //   } catch (err) {
+  //     log.error({ err: err.message }, 'Cron: Ideal import failed')
+  //   }
+  // })
+  // log.info('Cron: daily import scheduled at 03:00')
 
   function setupGzipCacheMiddleware(server) {
       // --- Gzip responses ---

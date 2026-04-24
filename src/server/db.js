@@ -154,12 +154,17 @@ export function searchProdutos({ query, supplier, marca, precoMin, precoMax, pag
   const where = []
   const params = {}
 
-  // Parse "reval:" or "ideal:" prefix from query
+  // Parse supplier from query: "reval abaco" → supplier=reval, query=abaco
+  // Also supports "reval:abaco" and "ideal:abaco"
   let effectiveQuery = query
-  if (query && /^(reval|ideal):/i.test(query)) {
-    const match = query.match(/^(reval|ideal):(.*)/i)
-    supplier = match[1].toLowerCase()
-    effectiveQuery = match[2].trim()
+  if (query) {
+    const suppliers = ['reval', 'ideal']
+    const words = query.split(/\s+/)
+    const firstWord = words[0].replace(/:$/, '').toLowerCase()
+    if (suppliers.includes(firstWord) && words.length > 1) {
+      supplier = firstWord
+      effectiveQuery = words.slice(1).join(' ')
+    }
   }
 
   where.push('deleted_at IS NULL')
@@ -195,7 +200,7 @@ export function searchProdutos({ query, supplier, marca, precoMin, precoMax, pag
     const words = effectiveQuery.split(/\s+/).filter(Boolean)
     const conditions = words.map((_, i) => {
       params[`w${i}`] = `%${words[i].toLowerCase()}%`
-      return `(LOWER(nome) LIKE @w${i} OR LOWER(descricao) LIKE @w${i} OR LOWER(marca) LIKE @w${i})`
+      return `(LOWER(nome) LIKE @w${i} OR LOWER(descricao) LIKE @w${i} OR LOWER(marca) LIKE @w${i} OR LOWER(codigo) LIKE @w${i})`
     })
     where.push(`(${conditions.join(' AND ')})`)
   }

@@ -1,8 +1,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import axios from 'axios'
-import { getDb, upsertRevalProdutos, upsertIdealProdutos, softDeleteMissing } from './db.js'
-import { runScraper } from './scraper-ideal/index.js'
+import { getDb, upsertRevalProdutos, softDeleteMissing } from './db.js'
+
+const execFileAsync = promisify(execFile)
 
 const REVAL_BASE_URL = 'http://api.reval.net'
 const CACHE_DIR = path.resolve('cache')
@@ -64,20 +67,15 @@ export async function importRevalProducts() {
 
 export async function importIdealProducts() {
   console.log('[import] Scraping Ideal products...')
-  let totalUpserted = 0
-  let totalSkipped = 0
-  const allCodes = []
+  const scraperPath = path.resolve('python-ideal-scraper/scraper.py')
 
-  const totalExtracted = await runScraper((products) => {
-    const valid = products.filter(p => p.nome)
-    const skipped = products.length - valid.length
-    if (skipped) totalSkipped += skipped
-    allCodes.push(...valid.map(p => String(p.codigo)))
-    totalUpserted += upsertIdealProdutos(valid)
-  })
+  const { stdout } = await execFileAsync('uv', [
+    'run', '--project', 'python-ideal-scraper',
+    'python', scraperPath, 'full', '-p', '10',
+  ], { maxBuffer: 10 * 1024 * 1024, env: { ...process.env } })
 
-  if (totalSkipped) console.log(`[import] Ideal: skipped ${totalSkipped} products without nome`)
-  const { disappeared, reappeared } = softDeleteMissing('ideal', allCodes)
-  console.log(`[import] Ideal: ${totalUpserted} upserted, ${disappeared} disappeared, ${reappeared} reappeared`)
-  return { supplier: 'ideal', count: totalUpserted, disappeared, reappeared }
+  const codes = JSON.parse(stdout)
+  const { disappeared, reappeared } = softDeleteMissing('ideal', codes)
+  console.log(`[import] Ideal: ${codes.length} products, ${disappeared} disappeared, ${reappeared} reappeared`)
+  return { supplier: 'ideal', count: codes.length, disappeared, reappeared }
 }

@@ -12,72 +12,7 @@ export function getDb() {
   _db = Database(DB_PATH)
   _db.pragma('journal_mode = WAL')
   _db.pragma('foreign_keys = ON')
-  initSchema(_db)
   return _db
-}
-
-function initSchema(db) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS produtos (
-      id TEXT PRIMARY KEY,
-      supplier TEXT NOT NULL,
-      codigo TEXT NOT NULL,
-      nome TEXT NOT NULL,
-      descricao TEXT,
-      marca TEXT,
-      ean TEXT,
-      referencia TEXT,
-      ncm TEXT,
-      peso REAL,
-      altura REAL,
-      largura REAL,
-      comprimento REAL,
-      embalagem TEXT,
-      imagem_url TEXT,
-      preco REAL,
-      estoque TEXT,
-      lista TEXT,
-      cfop TEXT,
-      cst TEXT,
-      icms REAL,
-      origem_descricao TEXT,
-      inf_adicionais TEXT,
-      url TEXT,
-      categoria TEXT,
-      ean_caixa TEXT,
-      origem TEXT,
-      codigo_barras TEXT,
-      codigo_barras_unit TEXT,
-      codigo_barras_master TEXT,
-      procedencia TEXT,
-      reposicao INTEGER DEFAULT 0,
-      atualizado_em TEXT,
-      UNIQUE(supplier, codigo)
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_produtos_supplier ON produtos(supplier);
-    CREATE INDEX IF NOT EXISTS idx_produtos_nome ON produtos(nome);
-    CREATE INDEX IF NOT EXISTS idx_produtos_marca ON produtos(marca);
-    CREATE INDEX IF NOT EXISTS idx_produtos_ean ON produtos(ean);
-    CREATE INDEX IF NOT EXISTS idx_produtos_preco ON produtos(preco);
-
-    CREATE TABLE IF NOT EXISTS product_status_log (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      produto_id TEXT NOT NULL,
-      supplier TEXT NOT NULL,
-      evento TEXT NOT NULL,
-      criado_em TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_status_log_produto ON product_status_log(produto_id);
-  `)
-
-  // Migrate existing DB
-  const cols = db.prepare("PRAGMA table_info(produtos)").all().map(c => c.name)
-  if (!cols.includes('deleted_at')) {
-    db.exec('ALTER TABLE produtos ADD COLUMN deleted_at TEXT')
-  }
-  db.exec('CREATE INDEX IF NOT EXISTS idx_produtos_deleted ON produtos(deleted_at)')
 }
 
 export function upsertRevalProdutos(produtos) {

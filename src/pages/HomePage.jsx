@@ -18,6 +18,7 @@ export function HomePage({ onNavigate }) {
           Buscar Produtos
         </button>
       </div>
+      <footer className="version">{__GIT_HASH__}</footer>
     </div>
   )
 }

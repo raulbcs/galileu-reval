@@ -253,7 +253,8 @@ export function serverPlugin() {
       // --- REST API: Search products ---
       server.middlewares.use('/api/produtos', (req, res, next) => {
         if (req.method !== 'GET') return next()
-        const url = new URL(req.url, 'http://localhost')
+        if (req.url !== '' && req.url !== '/' && !req.url.startsWith('?')) return next()
+        const url = new URL(req.url || '/', 'http://localhost')
         const result = searchProdutos({
           query: url.searchParams.get('q') || '',
           supplier: url.searchParams.get('supplier') || 'todos',

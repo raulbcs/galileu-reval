@@ -22,7 +22,7 @@ api.interceptors.response.use(
 )
 
 export async function searchProdutos({ query = '', supplier = 'todos', marca = '', precoMin = '', precoMax = '', page = 1, pageSize = 30 } = {}) {
-  const { data } = await api.get('/produtos', { params: { q: query, supplier, marca, precoMin, precoMax, page, pageSize } })
+  const { data } = await api.get('/busca', { params: { q: query, supplier, marca, precoMin, precoMax, page, pageSize } })
   return data
 }
 

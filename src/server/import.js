@@ -67,11 +67,10 @@ export async function importRevalProducts() {
 
 export async function importIdealProducts() {
   console.log('[import] Scraping Ideal products...')
-  const scraperPath = path.resolve('python-ideal-scraper/scraper.py')
+  const scraperPath = path.resolve('bash-ideal-scraper/scraper.sh')
 
-  const { stdout } = await execFileAsync('uv', [
-    'run', '--project', 'python-ideal-scraper',
-    'python', scraperPath, 'full', '-p', '10',
+  const { stdout } = await execFileAsync('bash', [
+    scraperPath, 'full', '-p', '10',
   ], { maxBuffer: 10 * 1024 * 1024, env: { ...process.env } })
 
   const codes = JSON.parse(stdout)

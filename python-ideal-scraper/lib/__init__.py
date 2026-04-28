@@ -1,1 +1,0 @@
-from .config import BASE_URL, DB_PATH, DELAY, CHECKPOINT_EVERY

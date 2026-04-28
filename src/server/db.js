@@ -4,6 +4,12 @@ import fs from 'node:fs'
 
 const DB_PATH = path.resolve('db/catalogo.db')
 
+function parseRevalDate(raw) {
+  if (!raw || raw.length !== 8) return null
+  const d = raw.slice(0, 2), m = raw.slice(2, 4), y = raw.slice(4)
+  return `${y}-${m}-${d}`
+}
+
 let _db = null
 
 export function getDb() {
@@ -12,6 +18,25 @@ export function getDb() {
   _db = Database(DB_PATH)
   _db.pragma('journal_mode = WAL')
   _db.pragma('foreign_keys = ON')
+  _db.exec(`
+    CREATE TABLE IF NOT EXISTS price_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      produto_id TEXT NOT NULL,
+      supplier TEXT NOT NULL,
+      preco_anterior REAL,
+      preco_novo REAL NOT NULL,
+      criado_em TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_price_history_produto ON price_history(produto_id);
+    CREATE TRIGGER IF NOT EXISTS trg_price_change
+    AFTER UPDATE ON produtos
+    FOR EACH ROW
+    WHEN NEW.preco IS NOT NULL AND OLD.preco IS NOT NEW.preco
+    BEGIN
+      INSERT INTO price_history (produto_id, supplier, preco_anterior, preco_novo)
+      VALUES (NEW.id, NEW.supplier, OLD.preco, NEW.preco);
+    END;
+  `)
   return _db
 }
 
@@ -75,7 +100,7 @@ export function upsertRevalProdutos(produtos) {
           codigoBarrasMaster: p.codigoBarrasMaster || null,
           procedencia: p.procedencia || null,
           reposicao: p.reposicao ? 1 : 0,
-          dataAttProduto: p.dataAttProduto || null,
+          dataAttProduto: parseRevalDate(p.dataAttProduto),
         })
         n++
       } catch (err) {
@@ -172,6 +197,15 @@ export function getCounts() {
 export function getMarcas() {
   const db = getDb()
   return db.prepare("SELECT DISTINCT marca FROM produtos WHERE marca IS NOT NULL AND marca != '' ORDER BY marca").all().map(r => r.marca)
+}
+
+export function getPriceHistory(supplier, codigo) {
+  const db = getDb()
+  return db.prepare(
+    `SELECT preco_anterior, preco_novo, criado_em
+     FROM price_history WHERE produto_id = ?
+     ORDER BY criado_em ASC`
+  ).all(`${supplier}:${codigo}`)
 }
 
 export function softDeleteMissing(supplier, activeCodes) {

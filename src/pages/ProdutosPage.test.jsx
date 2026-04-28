@@ -41,7 +41,7 @@ describe('ProdutosPage', () => {
 
   it('renderiza filtros de busca, marca e preco', () => {
     renderWithProviders(<ProdutosPage />)
-    expect(screen.getByPlaceholderText('Buscar por nome, descricao ou marca...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Digite nome, descrição, código ou marca')).toBeInTheDocument()
     expect(screen.getByText('BUSCA:')).toBeInTheDocument()
     expect(screen.getByText('FORNECEDOR:')).toBeInTheDocument()
     expect(screen.getByText('MARCA:')).toBeInTheDocument()

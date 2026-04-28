@@ -74,7 +74,7 @@ function RevalProdutoDetalhe({ produto, onBack, onNavigateTo }) {
               <tr><td className="label">Estoque</td><td>{traduzirEstoque(produto.estoque)}</td></tr>
               <tr><td className="label">Lista</td><td>{produto.lista ? <span className="detail-link" onClick={() => onNavigateTo?.('listas', produto.lista)}>{produto.lista}</span> : '-'}</td></tr>
               <tr><td className="label">Referencia</td><td>{produto.referencia || '-'}</td></tr>
-              <tr className="preco-row"><td className="label">Preco</td><td className="preco">{produto.preco != null ? `R$ ${produto.preco.toFixed(2)}` : '-'}</td></tr>
+              <tr className="preco-row"><td className="label">Preco</td><td className="preco">{produto.preco != null ? `R$ ${produto.preco.toFixed(2)}` : '-'}{produto.atualizado_em && <span className="atualizado-em"> (atualizado em: {new Date(produto.atualizado_em).toLocaleDateString('pt-BR')})</span>}</td></tr>
             </tbody>
           </table>
           {produto.inf_adicionais && (
@@ -147,7 +147,7 @@ function IdealProdutoDetalhe({ produto, onBack }) {
               <tr><td className="label">Categoria</td><td>{produto.categoria || '-'}</td></tr>
               <tr><td className="label">Origem</td><td>{produto.origem || '-'}</td></tr>
               <tr><td className="label">EAN Caixa</td><td>{produto.ean_caixa || '-'}</td></tr>
-              <tr className="preco-row"><td className="label">Preco</td><td className="preco">{produto.preco != null ? `R$ ${produto.preco.toFixed(2)}` : '-'}</td></tr>
+              <tr className="preco-row"><td className="label">Preco</td><td className="preco">{produto.preco != null ? `R$ ${produto.preco.toFixed(2)}` : '-'}{produto.atualizado_em && <span className="atualizado-em"> (atualizado em: {new Date(produto.atualizado_em).toLocaleDateString('pt-BR')})</span>}</td></tr>
             </tbody>
           </table>
           {produto.url && (

@@ -40,3 +40,8 @@ export async function getMarcas() {
   const { data } = await api.get('/marcas')
   return data
 }
+
+export async function getPriceHistory(supplier, codigo) {
+  const { data } = await api.get(`/preco-historico/${supplier}/${codigo}`)
+  return data
+}

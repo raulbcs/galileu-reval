@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useImagens } from '../hooks/useRevalApi'
-import { useProduto } from '../hooks/useApiProdutos'
+import { useProduto, usePriceHistory } from '../hooks/useApiProdutos'
 import { traduzirEstoque } from '../utils/estoque'
+import { PriceHistoryChart } from '../components/PriceHistoryChart'
 
 function RevalProdutoDetalhe({ produto, onBack, onNavigateTo }) {
   const [lightboxIndex, setLightboxIndex] = useState(-1)
   const { data: imagens, isLoading: loadingImagens } = useImagens(produto.codigo)
+  const { data: priceHistory } = usePriceHistory('reval', produto.codigo)
 
   const allImages = useMemo(() => {
     if (!imagens?.length) return []
@@ -83,6 +85,11 @@ function RevalProdutoDetalhe({ produto, onBack, onNavigateTo }) {
               <p>{produto.inf_adicionais}</p>
             </div>
           )}
+          {priceHistory && priceHistory.length > 0 ? (
+            <PriceHistoryChart data={priceHistory} />
+          ) : (
+            <div className="price-history-empty">Sem historico de precos</div>
+          )}
         </div>
       </div>
 
@@ -120,6 +127,7 @@ function RevalProdutoDetalhe({ produto, onBack, onNavigateTo }) {
 }
 
 function IdealProdutoDetalhe({ produto, onBack }) {
+  const { data: priceHistory } = usePriceHistory('ideal', produto.codigo)
   return (
     <div className="page">
       <button className="btn-back" onClick={onBack}>Voltar</button>
@@ -154,6 +162,11 @@ function IdealProdutoDetalhe({ produto, onBack }) {
             <div className="detalhe-extra">
               <a href={produto.url} target="_blank" rel="noopener noreferrer">Ver no site Atacado Ideal</a>
             </div>
+          )}
+          {priceHistory && priceHistory.length > 0 ? (
+            <PriceHistoryChart data={priceHistory} />
+          ) : (
+            <div className="price-history-empty">Sem historico de precos</div>
           )}
         </div>
       </div>

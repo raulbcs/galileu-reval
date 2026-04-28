@@ -2,11 +2,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import zlib from 'node:zlib'
 import axios from 'axios'
+import cron from 'node-cron'
 import * as Sentry from '@sentry/node'
 import { config } from 'dotenv'
 import pino from 'pino'
 import { signSession, verifySession, parseCookies, cachePath } from './src/server/crypto.js'
-import { getDb, searchProdutos, getProduto, getCounts, getMarcas } from './src/server/db.js'
+import { getDb, searchProdutos, getProduto, getCounts, getMarcas, getPriceHistory } from './src/server/db.js'
+import { importRevalProducts, importIdealProducts } from './src/server/import.js'
 
 function simpleLog() {
   return {
@@ -113,6 +115,23 @@ export function serverPlugin() {
   // Init DB on startup
   const counts = getCounts()
   log.info({ counts }, 'SQLite DB ready')
+
+  cron.schedule('0 3 * * *', async () => {
+    log.info('Cron: starting daily import...')
+    try {
+      const revalResult = await importRevalProducts()
+      log.info(revalResult, 'Cron: Reval import done')
+    } catch (err) {
+      log.error({ err: err.message }, 'Cron: Reval import failed')
+    }
+    try {
+      const idealResult = await importIdealProducts()
+      log.info(idealResult, 'Cron: Ideal import done')
+    } catch (err) {
+      log.error({ err: err.message }, 'Cron: Ideal import failed')
+    }
+  })
+  log.info('Cron: daily import scheduled at 03:00')
 
   function setupGzipCacheMiddleware(server) {
       // --- Gzip responses ---
@@ -258,6 +277,16 @@ export function serverPlugin() {
           return
         }
         jsonResponse(res, produto)
+      })
+
+      // --- REST API: Price history ---
+      server.middlewares.use('/api/preco-historico/', (req, res, next) => {
+        if (req.method !== 'GET') return next()
+        const parts = req.url.slice(1).split('/')
+        if (parts.length < 2) return next()
+        const [supplier, codigo] = parts
+        const history = getPriceHistory(supplier, codigo)
+        jsonResponse(res, history)
       })
 
       // --- REST API: Counts ---

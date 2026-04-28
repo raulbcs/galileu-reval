@@ -128,6 +128,23 @@ CREATE TABLE IF NOT EXISTS product_status_log (
     criado_em TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_status_log_produto ON product_status_log(produto_id);
+CREATE TABLE IF NOT EXISTS price_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    produto_id TEXT NOT NULL,
+    supplier TEXT NOT NULL,
+    preco_anterior REAL,
+    preco_novo REAL NOT NULL,
+    criado_em TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_price_history_produto ON price_history(produto_id);
+CREATE TRIGGER IF NOT EXISTS trg_price_change
+AFTER UPDATE ON produtos
+FOR EACH ROW
+WHEN NEW.preco IS NOT NULL AND OLD.preco IS NOT NEW.preco
+BEGIN
+    INSERT INTO price_history (produto_id, supplier, preco_anterior, preco_novo)
+    VALUES (NEW.id, NEW.supplier, OLD.preco, NEW.preco);
+END;
 CREATE TABLE IF NOT EXISTS ideal_subcategorias (
     slug TEXT PRIMARY KEY,
     total_paginas INTEGER DEFAULT 0,

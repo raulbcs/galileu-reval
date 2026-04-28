@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { searchProdutos as apiSearch, getProduto as apiGetProduto, getCounts as apiGetCounts, getMarcas as apiGetMarcas } from '../api/produtosClient'
+import { searchProdutos as apiSearch, getProduto as apiGetProduto, getCounts as apiGetCounts, getMarcas as apiGetMarcas, getPriceHistory as apiGetPriceHistory } from '../api/produtosClient'
 
 export function useSearchProdutos({ query = '', supplier = 'todos', marca = '', precoMin = '', precoMax = '', page = 1, pageSize = 30 } = {}) {
   const minChars = query.length >= 3
@@ -31,5 +31,13 @@ export function useMarcas() {
     queryKey: ['produtos', 'marcas'],
     queryFn: apiGetMarcas,
     staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function usePriceHistory(supplier, codigo) {
+  return useQuery({
+    queryKey: ['priceHistory', supplier, codigo],
+    queryFn: () => apiGetPriceHistory(supplier, codigo),
+    enabled: !!supplier && !!codigo,
   })
 }

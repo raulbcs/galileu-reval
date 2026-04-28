@@ -631,6 +631,19 @@ main() {
     renice -n 19 -p $$ >/dev/null 2>&1 || true
     ionice -c 3 -p $$ >/dev/null 2>&1 || true
 
+    # Verifica se sessão é válida antes de raspar
+    if [[ "$command" != "stats" ]]; then
+        local preco_teste
+        preco_teste=$(http_get "$BASE_URL/artesanato/colas" | grep -oE 'data-preco="[0-9.]+"' | head -20)
+        local tem_preco
+        tem_preco=$(echo "$preco_teste" | grep -vE 'data-preco="0\.00"' | head -1)
+        if [[ -z "$tem_preco" ]]; then
+            log "ERROR" "Sessão inválida! Preços vieram 0.00 — verifique IDEAL_SESSION_COOKIE no .env"
+            exit 1
+        fi
+        log "INFO" "Sessão OK — preços detectados"
+    fi
+
     db_init
 
     case "$command" in

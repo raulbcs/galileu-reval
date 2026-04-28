@@ -1,6 +1,6 @@
 # Galileu
 
-Catálogo de produtos multi-fornecedor para a Papelaria Galileu. Integra dados da **Reval** (API) e **Atacado Ideal** (SQLite importado) com busca unificada.
+Catálogo de produtos multi-fornecedor para a Papelaria Galileu. Integra dados da **Reval** (API) e **Atacado Ideal** (web scraper) com busca unificada.
 
 ## Arquitetura
 
@@ -12,7 +12,7 @@ Catálogo de produtos multi-fornecedor para a Papelaria Galileu. Integra dados d
 | Fornecedor | Origem | Importação |
 |---|---|---|
 | Reval | API (`api.reval.net`) | `npm run import-reval` |
-| Atacado Ideal | SQLite externo | `npm run import-ideal` |
+| Atacado Ideal | Web scraper (`bash-ideal-scraper/`) | `npm run import-ideal` |
 
 Os dois fornecedores compartilham a mesma tabela `produtos` no SQLite, diferenciados pela coluna `supplier`. Produtos duplicados (mesmo EAN nos dois) não são mesclados — cada um aparece como card separado com badge de fornecedor.
 
@@ -20,13 +20,15 @@ Os dois fornecedores compartilham a mesma tabela `produtos` no SQLite, diferenci
 
 | Endpoint | Descrição |
 |---|---|
-| `GET /api/produtos?q=&supplier=&page=&pageSize=` | Busca paginada |
+| `GET /api/busca?q=&supplier=&marca=&precoMin=&precoMax=&page=&pageSize=` | Busca paginada |
 | `GET /api/produtos/:supplier/:codigo` | Detalhe do produto |
 | `GET /api/counts` | Contadores por fornecedor |
-| `POST /api/import/reval` | Importa produtos da Reval |
-| `POST /api/import/ideal` | Importa produtos da Ideal |
+| `GET /api/marcas` | Marcas distintas |
+| `POST /cached-api/login` | Login com senha, retorna cookie de sessão |
 | `GET /cached-images/:codigo` | Imagem da Reval (proxy com cache) |
 | `GET /cached-api/*` | Proxy cacheado pra API Reval (categorias, etc.) |
+| `POST /cached-api/clear` | Limpa cache da API Reval |
+| `GET /cached-api/auth` | Retorna token de acesso Reval |
 
 Busca suporta prefixo: `reval:termo` ou `ideal:termo` filtra por fornecedor direto na query.
 
@@ -81,6 +83,7 @@ Tela de login com senha validada server-side. Sessão via cookie httpOnly assina
 | `REVAL_USER` | Usuário da API Reval (server-side only) |
 | `REVAL_PASS` | Senha da API Reval (server-side only) |
 | `APP_PASSWORD` | Senha de acesso ao app (default: `password`) |
+| `IDEAL_SESSION_COOKIE` | Cookie `PHPSESSID` do Atacado Ideal (opcional, para scraper autenticado) |
 | `VITE_SENTRY_DSN` | DSN do Sentry (opcional, só ativa em produção) |
 
 ## Stack

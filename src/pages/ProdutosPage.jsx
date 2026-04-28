@@ -139,7 +139,7 @@ export function ProdutosPage({ onSelectProduto }) {
           <div className="search-row-options search-row-input">
             <input
               type="text"
-              placeholder="Buscar por nome, descricao ou marca..."
+              placeholder="Digite nome, descrição, código ou marca"
               value={query}
               onChange={(e) => { setQuery(e.target.value); resetPage() }}
             />

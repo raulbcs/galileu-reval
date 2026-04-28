@@ -76,7 +76,7 @@ db_query() {
 
 db_init() {
     mkdir -p "$(dirname "$DB_PATH")"
-    db_exec "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;" 2>/dev/null
+    db_exec "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;" >/dev/null 2>&1
     db_exec <<'DDL'
 CREATE TABLE IF NOT EXISTS produtos (
     id TEXT PRIMARY KEY,

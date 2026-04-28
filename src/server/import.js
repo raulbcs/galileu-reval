@@ -70,7 +70,7 @@ export async function importIdealProducts() {
   const scraperPath = path.resolve('bash-ideal-scraper/scraper.sh')
 
   const { stdout } = await execFileAsync('bash', [
-    scraperPath, 'full', '-p', '10',
+    scraperPath, 'full', '-p', '2',
   ], { maxBuffer: 10 * 1024 * 1024, env: { ...process.env } })
 
   const codes = JSON.parse(stdout)

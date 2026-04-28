@@ -11,10 +11,6 @@ const SUPPLIER_FILTERS = [
   { key: 'ideal', label: 'Ideal' },
 ]
 
-function resetFilter(setter) {
-  return (val) => { setter(val) }
-}
-
 function MarcaCombobox({ marcas, selected, onChange }) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')

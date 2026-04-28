@@ -1,4 +1,4 @@
-import { parseInput, toInputStr } from './priceCalc'
+import { parseInput } from './priceCalc'
 
 function sanitizeInput(raw) {
   return raw.replace(/\./g, ',')

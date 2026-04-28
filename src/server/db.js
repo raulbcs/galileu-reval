@@ -88,67 +88,6 @@ export function upsertRevalProdutos(produtos) {
   return count
 }
 
-export function upsertIdealProdutos(produtos) {
-  const db = getDb()
-  const stmt = db.prepare(`
-    INSERT INTO produtos (
-      id, supplier, codigo, nome, descricao, marca, ean, referencia, ncm,
-      peso, altura, largura, comprimento, embalagem, imagem_url, preco, estoque,
-      url, categoria, ean_caixa, origem, atualizado_em
-    ) VALUES (
-      'ideal:' || @codigo, 'ideal', @codigo, @nome, @descricao, @marca,
-      @ean, @referencia, @ncm,
-      @peso, @altura, @largura, @comprimento, @embalagem,
-      @imagem_url, @preco, @estoque,
-      @url, @categoria, @ean_caixa, @origem, @atualizado_em
-    )
-    ON CONFLICT(supplier, codigo) DO UPDATE SET
-      nome=excluded.nome, descricao=excluded.descricao, marca=excluded.marca,
-      ean=excluded.ean, referencia=excluded.referencia, ncm=excluded.ncm,
-      peso=excluded.peso, altura=excluded.altura, largura=excluded.largura,
-      comprimento=excluded.comprimento, embalagem=excluded.embalagem,
-      imagem_url=excluded.imagem_url, preco=excluded.preco, estoque=excluded.estoque,
-      url=excluded.url, categoria=excluded.categoria, ean_caixa=excluded.ean_caixa,
-      origem=excluded.origem, atualizado_em=excluded.atualizado_em
-  `)
-
-  const count = db.transaction((items) => {
-    let n = 0
-    for (const p of items) {
-      try {
-        stmt.run({
-          codigo: String(p.codigo || ''),
-          nome: p.nome || '',
-          descricao: p.descricao || null,
-          marca: p.marca || null,
-          ean: p.ean || null,
-          referencia: p.sku_fabricante || null,
-          ncm: p.ncm || null,
-          peso: p.peso_kg ? parseFloat(p.peso_kg) : null,
-          altura: p.altura_cm ? parseFloat(p.altura_cm) : null,
-          largura: p.largura_cm ? parseFloat(p.largura_cm) : null,
-          comprimento: p.comprimento_cm ? parseFloat(p.comprimento_cm) : null,
-          embalagem: p.embalagem || null,
-          imagem_url: p.imagem_url || null,
-          preco: p.preco ? parseFloat(p.preco) : null,
-          estoque: p.estoque || null,
-          url: p.url || null,
-          categoria: p.categoria || null,
-          ean_caixa: p.ean_caixa || null,
-          origem: p.origem || null,
-          atualizado_em: p.atualizado_em || null,
-        })
-        n++
-      } catch (err) {
-        // skip
-      }
-    }
-    return n
-  })(produtos)
-
-  return count
-}
-
 export function searchProdutos({ query, supplier, marca, precoMin, precoMax, page = 1, pageSize = 30 } = {}) {
   const db = getDb()
   const where = []

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const api = axios.create({ baseURL: '/cached-api', timeout: 240000 })
+const api = axios.create({ baseURL: '/cached-api', timeout: 240000 })
 
 api.interceptors.request.use((config) => {
   config._start = Date.now()

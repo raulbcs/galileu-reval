@@ -27,12 +27,6 @@ export function parseInput(raw) {
   return parseFloat(String(raw).replace(',', '.')) || 0
 }
 
-export function toInputStr(num) {
-  if (!num) return ''
-  const s = num.toFixed(2)
-  return s.endsWith('.00') ? s.slice(0, -3).replace('.', ',') || '0' : s.replace('.', ',')
-}
-
 export function fmtFaixaML(v) {
   if (v < 12.50) return { taxa: v / 2, desc: '50% do preço (< R$12,50)' }
   if (v < 29) return { taxa: 6.25, desc: 'R$6,25 (R$12,50–R$29)' }
